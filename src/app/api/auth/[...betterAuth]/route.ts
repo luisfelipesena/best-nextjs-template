@@ -1,4 +1,8 @@
-import { toNextJsHandler } from 'better-auth/next';
-import { auth } from '@/server/auth';
+// Temporarily simplified auth route
+export async function GET() {
+  return new Response('Auth endpoint', { status: 200 });
+}
 
-export const { GET, POST } = toNextJsHandler(auth);
+export async function POST() {
+  return new Response('Auth endpoint', { status: 200 });
+}

@@ -1,0 +1,212 @@
+# Next.js Full Stack Template - Cursor Rules
+
+## Arquitetura Geral
+
+Este é um template Next.js full stack organizado e escalável seguindo princípios de clean architecture e componentização.
+
+### Tech Stack
+- **Frontend/Backend**: Next.js 15 com App Router
+- **Linguagem**: TypeScript
+- **Validação**: Zod
+- **Estado/Queries**: Tanstack Query + TRPC
+- **UI**: Shadcn Components + Tailwind CSS
+- **Linting/Formatting**: Biome
+- **Database**: Drizzle ORM + PostgreSQL
+- **Autenticação**: Better-auth
+
+## Estrutura de Pastas
+
+### Backend (File-based por rotas)
+```
+src/server/routes/
+├── auth/
+│   ├── auth.service.ts    # Lógica de negócio
+│   ├── auth.route.ts      # Definição das rotas TRPC
+│   └── auth.dto.ts        # Schemas Zod para validação
+├── users/
+│   ├── users.service.ts
+│   ├── users.route.ts
+│   └── users.dto.ts
+└── ...
+```
+
+### Frontend
+```
+src/
+├── components/
+│   ├── ui/                # Componentes base do Shadcn
+│   ├── layout/            # Componentes de layout
+│   └── auth/              # Componentes específicos de auth
+├── features/              # Componentes de fluxos/features
+│   ├── auth/
+│   │   ├── login-form.tsx
+│   │   └── register-form.tsx
+│   └── dashboard/
+├── hooks/                 # Custom hooks (Tanstack Query + TRPC)
+│   ├── use-auth-session.ts
+│   └── use-users.ts
+├── providers/             # Context providers
+└── lib/                   # Utilitários
+```
+
+## Regras de Desenvolvimento
+
+### 1. Componentização
+- **MÁXIMO 350 linhas por arquivo**
+- Se um arquivo exceder 350 linhas, quebrar em componentes menores
+- Cada componente deve ter uma responsabilidade única
+- Usar composition pattern quando possível
+
+### 2. Nomenclatura
+- **Arquivos**: kebab-case (ex: `user-profile.tsx`)
+- **Componentes**: PascalCase (ex: `UserProfile`)
+- **Hooks**: camelCase com prefixo `use` (ex: `useUserProfile`)
+- **Services**: camelCase com sufixo `Service` (ex: `userService`)
+- **DTOs**: camelCase com sufixo `Dto` (ex: `userDto`)
+
+### 3. Estrutura de Arquivos Backend
+Cada rota deve ter:
+- `*.service.ts`: Lógica de negócio pura
+- `*.route.ts`: Definição das rotas TRPC
+- `*.dto.ts`: Schemas Zod para validação
+
+### 4. Estrutura de Componentes
+```typescript
+// 1. Imports externos
+import React from 'react'
+import { Button } from '@/components/ui/button'
+
+// 2. Imports internos
+import { useAuth } from '@/hooks/use-auth-session'
+import { UserProfile } from '@/features/user/user-profile'
+
+// 3. Types/Interfaces
+interface ComponentProps {
+  // props
+}
+
+// 4. Componente principal
+export function Component({ ...props }: ComponentProps) {
+  // hooks
+  // handlers
+  // render
+}
+```
+
+### 5. Validação com Zod
+- Sempre validar dados de entrada com Zod
+- Usar schemas reutilizáveis
+- Tipos inferidos automaticamente
+
+### 6. TRPC + Tanstack Query
+- Usar TRPC para type-safe APIs
+- Tanstack Query para cache e estado
+- Custom hooks para encapsular queries
+
+### 7. Styling
+- Tailwind CSS para estilos
+- Shadcn Components como base
+- CSS-in-JS apenas quando necessário
+- Usar `cn()` utility para conditional classes
+
+### 8. Database
+- Drizzle ORM para queries type-safe
+- Migrations versionadas
+- Schemas organizados por domínio
+
+### 9. Autenticação
+- Better-auth para gerenciamento de sessão
+- Middleware para proteção de rotas
+- Context providers para estado global
+
+### 10. Testes
+- Vitest para testes unitários
+- Playwright para testes E2E
+- Testing Library para testes de componentes
+- Cobertura mínima de 80%
+
+## Comandos Úteis
+
+```bash
+# Desenvolvimento
+npm run dev
+
+# Build
+npm run build
+
+# Linting/Formatting
+npm run lint
+npm run format
+
+# Testes
+npm run test
+npm run test:watch
+npm run test:e2e
+
+# Database
+npm run drizzle:generate
+npm run drizzle:migrate
+npm run drizzle:push
+
+# CI/CD
+npm run test:ci
+```
+
+## Boas Práticas
+
+1. **Sempre** componentizar quando arquivo > 350 linhas
+2. **Sempre** validar dados com Zod
+3. **Sempre** usar TypeScript strict mode
+4. **Sempre** seguir a estrutura de pastas definida
+5. **Sempre** escrever testes para lógica crítica
+6. **Sempre** usar Biome para formatação
+7. **Sempre** documentar APIs públicas
+8. **Nunca** commitar código sem linting
+9. **Nunca** usar `any` type
+10. **Nunca** misturar lógica de negócio com UI
+
+## Exemplos de Uso
+
+### Service Pattern
+```typescript
+// auth.service.ts
+export class AuthService {
+  async login(credentials: LoginDto) {
+    // lógica de negócio
+  }
+}
+```
+
+### TRPC Route
+```typescript
+// auth.route.ts
+export const authRouter = router({
+  login: publicProcedure
+    .input(loginDto)
+    .mutation(async ({ input }) => {
+      return authService.login(input)
+    })
+})
+```
+
+### Custom Hook
+```typescript
+// use-auth-session.ts
+export function useAuthSession() {
+  return trpc.auth.getSession.useQuery()
+}
+```
+
+### Component
+```typescript
+// login-form.tsx
+export function LoginForm() {
+  const { mutate: login } = trpc.auth.login.useMutation()
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* form fields */}
+    </form>
+  )
+}
+```

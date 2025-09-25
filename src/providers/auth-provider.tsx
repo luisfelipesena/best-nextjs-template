@@ -1,13 +1,8 @@
 'use client';
 
-import { createAuthClient } from 'better-auth/react';
 import { ReactNode } from 'react';
 
-const authClient = createAuthClient({ baseURL: '/api/auth' });
-
+// Temporarily simplified auth provider
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const Provider = authClient.Provider;
-  return <Provider>{children}</Provider>;
+  return <>{children}</>;
 }
-
-export { authClient };
