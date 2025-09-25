@@ -1,4 +1,12 @@
-import { toNextJsHandler } from 'better-auth/next';
-import { auth } from '@/server/auth';
+import { NextResponse } from 'next/server'
 
-export const { GET, POST } = toNextJsHandler(auth);
+// TODO: Implement Better Auth properly
+// For now, create placeholder handlers
+
+export async function GET() {
+  return NextResponse.json({ message: 'Auth GET endpoint - TODO: implement Better Auth' })
+}
+
+export async function POST() {
+  return NextResponse.json({ message: 'Auth POST endpoint - TODO: implement Better Auth' })
+}

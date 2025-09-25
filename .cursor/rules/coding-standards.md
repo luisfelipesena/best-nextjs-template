@@ -1,0 +1,535 @@
+# Padrões de Código - Next.js Template
+
+## 🎨 Estilo e Formatação
+
+### Biome Configuration
+Este projeto usa **Biome** para linting e formatting. As configurações estão em `biome.json`.
+
+**Regras principais:**
+- Indentação: 2 espaços
+- Aspas simples para strings
+- Ponto e vírgula: apenas quando necessário
+- Largura de linha: 120 caracteres
+- Trailing commas: ES5
+
+### VSCode Settings
+O arquivo `.vscode/settings.json` está configurado para:
+- Format on save com Biome
+- Auto-organize imports
+- Configurações específicas para TypeScript e Tailwind
+
+## 📝 Convenções de Nomenclatura
+
+### Arquivos e Pastas
+```
+kebab-case.tsx          # Componentes
+kebab-case.ts           # Utilitários, hooks, services
+kebab-case.test.ts      # Testes
+kebab-case.stories.ts   # Storybook stories
+```
+
+### Componentes
+```typescript
+// PascalCase para componentes
+export function UserProfile() {}
+export function LoginForm() {}
+
+// Props interface com sufixo Props
+interface UserProfileProps {
+  userId: string
+  showAvatar?: boolean
+}
+```
+
+### Hooks
+```typescript
+// camelCase com prefixo 'use'
+export function useAuth() {}
+export function useLocalStorage() {}
+export function useDebounce() {}
+```
+
+### Constantes e Enums
+```typescript
+// UPPER_SNAKE_CASE para constantes
+const API_BASE_URL = 'https://api.example.com'
+const MAX_RETRY_ATTEMPTS = 3
+
+// PascalCase para enums
+enum UserRole {
+  Admin = 'admin',
+  User = 'user',
+  Moderator = 'moderator',
+}
+```
+
+### Variáveis e Funções
+```typescript
+// camelCase para variáveis e funções
+const userName = 'john_doe'
+const isLoggedIn = true
+
+function calculateTotal() {}
+function handleUserLogin() {}
+```
+
+## 🏗️ Estrutura de Componentes
+
+### Template Padrão
+```typescript
+'use client' // Apenas se necessário
+
+// 1. Imports externos
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+// 2. Imports de bibliotecas
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+
+// 3. Imports internos
+import { useAuth } from '@/hooks'
+import { LoginSchema } from '@/features/auth'
+
+// 4. Imports relativos
+import { validateForm } from './utils'
+
+// 5. Types e interfaces
+interface ComponentProps {
+  title: string
+  onSubmit?: (data: FormData) => void
+  className?: string
+}
+
+// 6. Schemas (se aplicável)
+const formSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+})
+
+// 7. Componente principal
+export function Component({ title, onSubmit, className }: ComponentProps) {
+  // 7.1 State
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  // 7.2 Hooks
+  const router = useRouter()
+  const { user } = useAuth()
+  
+  // 7.3 Event handlers
+  const handleSubmit = async (data: FormData) => {
+    setIsLoading(true)
+    try {
+      await onSubmit?.(data)
+    } catch (err) {
+      setError('Something went wrong')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  // 7.4 Effects
+  useEffect(() => {
+    // Side effects
+  }, [])
+  
+  // 7.5 Early returns
+  if (!user) {
+    return <div>Please login</div>
+  }
+  
+  // 7.6 Render
+  return (
+    <div className={className}>
+      <h1>{title}</h1>
+      {error && <div className="text-red-500">{error}</div>}
+      <Button onClick={handleSubmit} disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Submit'}
+      </Button>
+    </div>
+  )
+}
+```
+
+## 🔧 Padrões de Backend
+
+### Service Pattern
+```typescript
+// DTO (Data Transfer Object)
+import { z } from 'zod'
+
+export const createPostDto = z.object({
+  title: z.string().min(1).max(100),
+  content: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+})
+
+export type CreatePostDto = z.infer<typeof createPostDto>
+
+// Service (Business Logic)
+import { TRPCError } from '@trpc/server'
+import type { Context } from '@/server/trpc/context'
+
+export class PostService {
+  constructor(private readonly ctx: Context) {}
+
+  async createPost(input: CreatePostDto) {
+    const session = this.ctx.auth.session
+    if (!session) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'You must be logged in to create a post',
+      })
+    }
+
+    try {
+      const post = await this.ctx.db.insert(posts).values({
+        title: input.title,
+        content: input.content,
+        authorId: session.user.id,
+        tags: input.tags,
+      }).returning()
+
+      return post[0]
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to create post',
+        cause: error,
+      })
+    }
+  }
+}
+
+// Route (TRPC Procedures)
+import { createTRPCRouter, protectedProcedure } from '@/server/trpc/core'
+
+export const postRouter = createTRPCRouter({
+  create: protectedProcedure
+    .input(createPostDto)
+    .mutation(async ({ ctx, input }) => {
+      const service = new PostService(ctx)
+      return service.createPost(input)
+    }),
+})
+```
+
+## 📊 Error Handling
+
+### Frontend Error Handling
+```typescript
+// Hook personalizado para error handling
+export function useErrorHandler() {
+  const [error, setError] = useState<string | null>(null)
+
+  const handleError = (err: unknown) => {
+    if (err instanceof TRPCError) {
+      setError(err.message)
+    } else if (err instanceof Error) {
+      setError(err.message)
+    } else {
+      setError('An unexpected error occurred')
+    }
+  }
+
+  const clearError = () => setError(null)
+
+  return { error, handleError, clearError }
+}
+
+// Uso em componentes
+function MyComponent() {
+  const { error, handleError, clearError } = useErrorHandler()
+  const mutation = trpc.posts.create.useMutation({
+    onError: handleError,
+    onSuccess: clearError,
+  })
+
+  return (
+    <div>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+      {/* Rest of component */}
+    </div>
+  )
+}
+```
+
+### Backend Error Handling
+```typescript
+// Service com error handling
+export class UserService {
+  async updateUser(id: string, input: UpdateUserDto) {
+    try {
+      const user = await this.ctx.db
+        .update(users)
+        .set(input)
+        .where(eq(users.id, id))
+        .returning()
+
+      if (!user[0]) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        })
+      }
+
+      return user[0]
+    } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error
+      }
+
+      // Log error for debugging
+      console.error('Failed to update user:', error)
+
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to update user',
+        cause: error,
+      })
+    }
+  }
+}
+```
+
+## 🧪 Testing Patterns
+
+### Component Testing
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react'
+import { vi } from 'vitest'
+import { Button } from './button'
+
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByRole('button')).toHaveTextContent('Click me')
+  })
+
+  it('calls onClick when clicked', () => {
+    const handleClick = vi.fn()
+    render(<Button onClick={handleClick}>Click me</Button>)
+    
+    fireEvent.click(screen.getByRole('button'))
+    expect(handleClick).toHaveBeenCalledOnce()
+  })
+
+  it('is disabled when loading', () => {
+    render(<Button isLoading>Click me</Button>)
+    expect(screen.getByRole('button')).toBeDisabled()
+  })
+})
+```
+
+### Service Testing
+```typescript
+import { describe, it, expect, beforeEach } from 'vitest'
+import { TRPCError } from '@trpc/server'
+import { UserService } from './user.service'
+import { createMockContext } from '@/tests/__mocks__/context'
+
+describe('UserService', () => {
+  let service: UserService
+  let mockContext: ReturnType<typeof createMockContext>
+
+  beforeEach(() => {
+    mockContext = createMockContext()
+    service = new UserService(mockContext)
+  })
+
+  it('should create user successfully', async () => {
+    const input = { name: 'John Doe', email: 'john@example.com' }
+    const expectedUser = { id: '1', ...input }
+
+    mockContext.db.insert.mockResolvedValue([expectedUser])
+
+    const result = await service.createUser(input)
+    expect(result).toEqual(expectedUser)
+  })
+
+  it('should throw error when unauthorized', async () => {
+    mockContext.auth.session = null
+
+    await expect(
+      service.createUser({ name: 'John', email: 'john@example.com' })
+    ).rejects.toThrow(TRPCError)
+  })
+})
+```
+
+## 📱 Responsive Design
+
+### Tailwind Breakpoints
+```typescript
+// Mobile First Approach
+<div className="
+  w-full           // Base: mobile
+  sm:w-1/2         // Small: 640px+
+  md:w-1/3         // Medium: 768px+
+  lg:w-1/4         // Large: 1024px+
+  xl:w-1/5         // Extra Large: 1280px+
+  2xl:w-1/6        // 2X Large: 1536px+
+">
+```
+
+### Container Patterns
+```typescript
+// Page container
+<div className="container mx-auto px-4 py-8">
+  {/* Content */}
+</div>
+
+// Card pattern
+<div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+  {/* Card content */}
+</div>
+
+// Grid layouts
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {items.map(item => (
+    <div key={item.id} className="...">
+      {/* Grid item */}
+    </div>
+  ))}
+</div>
+```
+
+## 🔒 Security Best Practices
+
+### Input Validation
+```typescript
+// Always validate with Zod
+const userSchema = z.object({
+  email: z.string().email().toLowerCase(),
+  password: z.string().min(8).max(100),
+  name: z.string().min(2).max(50).trim(),
+})
+
+// Sanitize HTML content
+import DOMPurify from 'dompurify'
+
+const sanitizedContent = DOMPurify.sanitize(userInput)
+```
+
+### Authentication Checks
+```typescript
+// TRPC protected procedure
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.auth.session) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'You must be logged in',
+    })
+  }
+
+  return next({ ctx: { ...ctx, user: ctx.auth.session.user } })
+})
+
+// Component auth check
+function ProtectedComponent() {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) return <Loading />
+  if (!user) return <LoginPrompt />
+
+  return <div>Protected content</div>
+}
+```
+
+## 📈 Performance Guidelines
+
+### Code Splitting
+```typescript
+// Dynamic imports for heavy components
+import { lazy, Suspense } from 'react'
+
+const HeavyChart = lazy(() => import('./heavy-chart'))
+
+function Dashboard() {
+  return (
+    <div>
+      <Suspense fallback={<div>Loading chart...</div>}>
+        <HeavyChart />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+### Memoization
+```typescript
+import { memo, useMemo, useCallback } from 'react'
+
+// Memoize expensive calculations
+function ExpensiveComponent({ data }: { data: Item[] }) {
+  const processedData = useMemo(() => {
+    return data.map(item => expensiveCalculation(item))
+  }, [data])
+
+  const handleClick = useCallback((id: string) => {
+    // Handle click
+  }, [])
+
+  return <div>{/* Render */}</div>
+}
+
+// Memoize component if props don't change often
+export default memo(ExpensiveComponent)
+```
+
+## 🔍 Debugging Guidelines
+
+### Console Logging
+```typescript
+// Development only logging
+if (process.env.NODE_ENV === 'development') {
+  console.log('Debug info:', data)
+}
+
+// Use proper log levels
+console.error('Error:', error)
+console.warn('Warning:', warning)
+console.info('Info:', info)
+```
+
+### Error Boundaries
+```typescript
+import { Component, type ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface State {
+  hasError: boolean
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): State {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Error boundary caught an error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || <div>Something went wrong.</div>
+    }
+
+    return this.props.children
+  }
+}
+```

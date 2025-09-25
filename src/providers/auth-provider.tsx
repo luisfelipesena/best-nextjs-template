@@ -1,13 +1,11 @@
-'use client';
+'use client'
 
-import { createAuthClient } from 'better-auth/react';
-import { ReactNode } from 'react';
+import { ReactNode } from 'react'
 
-const authClient = createAuthClient({ baseURL: '/api/auth' });
-
+// TODO: Implement proper AuthProvider with Better Auth
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const Provider = authClient.Provider;
-  return <Provider>{children}</Provider>;
+  return <>{children}</>
 }
 
-export { authClient };
+// TODO: Implement proper authClient
+export const authClient = {}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/app-shell';
-import { AuthStatus } from '@/components/auth/auth-status';
+import { AuthStatus } from '@/features/auth'
 
 export default function Home() {
   return (
