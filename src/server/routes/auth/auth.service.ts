@@ -1,36 +1,38 @@
 import type { Context } from '@/server/trpc/context';
 import type { UpdateProfileDto } from './auth.dto';
+import { eq } from 'drizzle-orm';
+import { users } from '@/server/db/schema';
 
 export class AuthService {
   constructor(private readonly ctx: Context) {}
 
   async getSession() {
-    return this.ctx.auth.session;
+    return this.ctx.auth?.session ?? null;
   }
 
   async getProfile() {
-    const session = this.ctx.auth.session;
-    if (!session) {
+    const authContext = this.ctx.auth;
+    if (!authContext?.user) {
       throw new Error('Unauthorized');
     }
 
-    return session.user;
+    return authContext.user;
   }
 
   async updateProfile(input: UpdateProfileDto) {
-    const session = this.ctx.auth.session;
-    if (!session) {
+    const authContext = this.ctx.auth;
+    if (!authContext?.user) {
       throw new Error('Unauthorized');
     }
 
     const updated = await this.ctx.db
-      .updateTable('users')
-      .set({ name: input.name })
-      .where('users.id', '=', session.user.id)
-      .returning(['id', 'name'])
-      .executeTakeFirst();
+      .update(users)
+      .set({ name: input.name, updatedAt: new Date() })
+      .where(eq(users.id, authContext.user.id))
+      .returning({ id: users.id, name: users.name })
+      .execute();
 
-    return updated;
+    return updated[0];
   }
 }
 

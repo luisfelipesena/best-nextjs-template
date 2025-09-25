@@ -10,9 +10,9 @@ const t = initTRPC.context<Context>().create({
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.auth.session) {
+  if (!ctx.auth?.user) {
     throw new Error('Unauthorized');
   }
 
-  return next({ ctx: { ...ctx, session: ctx.auth.session } });
+  return next({ ctx: { ...ctx, user: ctx.auth.user } });
 });
