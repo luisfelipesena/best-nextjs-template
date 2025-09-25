@@ -1,8 +1,8 @@
 import { createTRPCRouter } from '../core';
-import { authRouter } from '@/server/routes/auth/auth.route';
+import { authRoutes } from '@/server/routes/auth/auth.route';
 
 export const appRouter = createTRPCRouter({
-  auth: authRouter,
+  auth: authRoutes,
 });
 
 export type AppRouter = typeof appRouter;
