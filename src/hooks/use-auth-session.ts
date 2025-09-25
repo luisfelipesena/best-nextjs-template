@@ -1,5 +1,8 @@
-import { authClient } from '@/providers/auth-provider';
-
+// Temporarily simplified auth session hook
 export function useAuthSession() {
-  return authClient.useSession();
+  return {
+    data: null,
+    isPending: false,
+    error: null,
+  };
 }

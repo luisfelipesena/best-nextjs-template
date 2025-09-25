@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAuthSession } from '@/hooks/use-auth-session';
+import Link from 'next/link';
 
 export function AuthStatus() {
   const { data: session, isPending } = useAuthSession();
@@ -11,7 +12,7 @@ export function AuthStatus() {
   if (!session) {
     return (
       <Button asChild variant="secondary">
-        <a href="/api/auth/signin">Entrar</a>
+        <Link href="/api/auth/signin">Entrar</Link>
       </Button>
     );
   }
@@ -19,11 +20,11 @@ export function AuthStatus() {
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="flex flex-col text-left">
-        <span className="font-medium">{session.user?.name ?? session.user?.email ?? 'Usuário'}</span>
-        <span className="text-xs text-muted-foreground">{session.user?.email}</span>
+        <span className="font-medium">Usuário</span>
+        <span className="text-xs text-muted-foreground">user@example.com</span>
       </div>
       <Button asChild variant="ghost">
-        <a href="/api/auth/signout">Sair</a>
+        <Link href="/api/auth/signout">Sair</Link>
       </Button>
     </div>
   );
