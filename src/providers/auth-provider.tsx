@@ -1,11 +1,14 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { createAuthClient } from 'better-auth/react'
 
-// TODO: Implement proper AuthProvider with Better Auth
+const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+})
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <>{children}</>
+  return <authClient.Provider>{children}</authClient.Provider>
 }
 
-// TODO: Implement proper authClient
-export const authClient = {}
+export { authClient }

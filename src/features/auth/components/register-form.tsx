@@ -4,19 +4,21 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { z } from 'zod'
-import { LoginSchema, type LoginInput } from '../types'
+import { RegisterSchema, type RegisterInput } from '../types'
 import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 
-export function LoginForm() {
-  const [formData, setFormData] = useState<LoginInput>({
+export function RegisterForm() {
+  const [formData, setFormData] = useState<RegisterInput>({
+    name: '',
     email: '',
     password: '',
+    confirmPassword: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { signIn } = useAuth()
+  const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,12 +27,13 @@ export function LoginForm() {
 
     try {
       // Validate with Zod
-      const validatedData = LoginSchema.parse(formData)
+      const validatedData = RegisterSchema.parse(formData)
       
-      // Sign in with Better Auth
-      const result = await signIn.email({
+      // Sign up with Better Auth
+      const result = await signUp.email({
         email: validatedData.email,
         password: validatedData.password,
+        name: validatedData.name,
       })
 
       if (result.error) {
@@ -49,14 +52,14 @@ export function LoginForm() {
         }
         setErrors(fieldErrors)
       } else {
-        setErrors({ general: 'Erro ao fazer login. Tente novamente.' })
+        setErrors({ general: 'Erro ao criar conta. Tente novamente.' })
       }
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChange = (field: keyof LoginInput) => (
+  const handleChange = (field: keyof RegisterInput) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setFormData(prev => ({ ...prev, [field]: e.target.value }))
@@ -69,9 +72,9 @@ export function LoginForm() {
   return (
     <div className='mx-auto max-w-sm space-y-6'>
       <div className='space-y-2 text-center'>
-        <h1 className='text-3xl font-bold'>Login</h1>
+        <h1 className='text-3xl font-bold'>Cadastro</h1>
         <p className='text-gray-500 dark:text-gray-400'>
-          Entre com suas credenciais
+          Crie sua conta para continuar
         </p>
       </div>
       
@@ -81,6 +84,23 @@ export function LoginForm() {
             <p className='text-sm text-red-500'>{errors.general}</p>
           </div>
         )}
+        
+        <div className='space-y-2'>
+          <label htmlFor='name' className='text-sm font-medium'>
+            Nome
+          </label>
+          <input
+            id='name'
+            type='text'
+            value={formData.name}
+            onChange={handleChange('name')}
+            className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            placeholder='Seu nome completo'
+          />
+          {errors.name && (
+            <p className='text-sm text-red-500'>{errors.name}</p>
+          )}
+        </div>
         
         <div className='space-y-2'>
           <label htmlFor='email' className='text-sm font-medium'>
@@ -116,16 +136,33 @@ export function LoginForm() {
           )}
         </div>
         
+        <div className='space-y-2'>
+          <label htmlFor='confirmPassword' className='text-sm font-medium'>
+            Confirmar Senha
+          </label>
+          <input
+            id='confirmPassword'
+            type='password'
+            value={formData.confirmPassword}
+            onChange={handleChange('confirmPassword')}
+            className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            placeholder='••••••••'
+          />
+          {errors.confirmPassword && (
+            <p className='text-sm text-red-500'>{errors.confirmPassword}</p>
+          )}
+        </div>
+        
         <Button type='submit' className='w-full' disabled={isLoading}>
-          {isLoading ? 'Entrando...' : 'Entrar'}
+          {isLoading ? 'Criando conta...' : 'Criar conta'}
         </Button>
       </form>
       
       <div className='text-center'>
         <p className='text-sm text-muted-foreground'>
-          Não tem uma conta?{' '}
-          <Link href='/register' className='font-medium text-primary hover:underline'>
-            Cadastre-se
+          Já tem uma conta?{' '}
+          <Link href='/login' className='font-medium text-primary hover:underline'>
+            Fazer login
           </Link>
         </p>
       </div>

@@ -1,8 +1,5 @@
-// TODO: Implement proper auth session hook
+import { authClient } from '@/providers/auth-provider'
+
 export function useAuthSession() {
-  return {
-    data: null,
-    isPending: false,
-    error: null,
-  }
+  return authClient.useSession()
 }
