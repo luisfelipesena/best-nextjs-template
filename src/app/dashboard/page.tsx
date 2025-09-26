@@ -1,3 +1,5 @@
+'use client'
+
 import { AuthStatus } from '@/features/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { ProtectedRoute } from '@/components/auth/protected-route'

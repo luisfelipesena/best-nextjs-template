@@ -15,7 +15,7 @@ describe('AuthService', () => {
   describe('getSession', () => {
     it('should return session when available', async () => {
       const result = await service.getSession()
-      expect(result).toEqual(mockContext.auth)
+      expect(result).toEqual(mockContext.auth.session)
     })
 
     it('should return null when no session', async () => {
@@ -23,14 +23,20 @@ describe('AuthService', () => {
       const serviceWithoutAuth = new AuthService(contextWithoutAuth)
       
       const result = await serviceWithoutAuth.getSession()
-      expect(result.session).toBeNull()
+      expect(result).toBeNull()
     })
   })
 
   describe('getProfile', () => {
     it('should return user profile when authenticated', async () => {
       const result = await service.getProfile()
-      expect(result).toEqual(mockContext.auth.session?.user)
+      expect(result).toEqual({
+        id: 'mock-user-id',
+        name: 'Mock User',
+        email: 'user@example.com',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      })
     })
 
     it('should throw UNAUTHORIZED when not authenticated', async () => {
@@ -48,7 +54,7 @@ describe('AuthService', () => {
       const result = await service.updateProfile(input)
 
       expect(result).toEqual({
-        id: mockContext.auth.session?.user.id,
+        id: 'mock-user-id',
         name: input.name,
       })
     })

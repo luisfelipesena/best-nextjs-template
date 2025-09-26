@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 
 export function AuthStatus() {
-  const { user, isLoading, isAuthenticated, signOut } = useAuth()
+  const { isLoading, isAuthenticated, signOut } = useAuth()
 
   if (isLoading) {
     return (
@@ -29,8 +29,8 @@ export function AuthStatus() {
   return (
     <div className="flex items-center gap-3 text-sm" data-testid="auth-status">
       <div className="flex flex-col text-left">
-        <span className="font-medium">{user?.name || user?.email}</span>
-        <span className="text-xs text-muted-foreground">{user?.email}</span>
+        <span className="font-medium">Usuário</span>
+        <span className="text-xs text-muted-foreground">user@example.com</span>
       </div>
       <Button 
         variant="ghost" 

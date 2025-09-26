@@ -1,10 +1,8 @@
 import type { inferAsyncReturnType } from '@trpc/server'
-import { headers } from 'next/headers'
 import { db } from '@/server/db'
 
 export async function createContext() {
-  // TODO: Implement auth context when database is available
-  // For now, return mock context
+  // Mock auth context for template - in real app, this would integrate with Better Auth
   const authContext = {
     session: null, // Will be populated when auth is working
   }

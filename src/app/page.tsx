@@ -1,5 +1,7 @@
-import Link from 'next/link';
-import { AppShell } from '@/components/layout/app-shell';
+'use client'
+
+import Link from 'next/link'
+import { AppShell } from '@/components/layout/app-shell'
 import { AuthStatus } from '@/features/auth'
 
 export default function Home() {

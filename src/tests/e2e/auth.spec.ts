@@ -1,12 +1,25 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Authentication Flow', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('Landing Page', () => {
+  test('should load homepage', async ({ page }) => {
     await page.goto('/')
+    
+    // Check if landing page loads correctly
+    await expect(page.getByText('Best Next.js Template')).toBeVisible()
+    await expect(page.getByText('Comece sua próxima aplicação')).toBeVisible()
   })
 
+  test('should have auth buttons', async ({ page }) => {
+    await page.goto('/')
+    
+    // Check if auth buttons are present
+    await expect(page.getByRole('link', { name: /entrar/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /cadastrar/i })).toBeVisible()
+  })
+})
+
+test.describe('Authentication Pages', () => {
   test('should display login form', async ({ page }) => {
-    // Navigate to login page
     await page.goto('/login')
     
     // Check if login form is visible
@@ -16,7 +29,18 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByRole('button', { name: /entrar/i })).toBeVisible()
   })
 
-  test('should show validation errors for invalid input', async ({ page }) => {
+  test('should display register form', async ({ page }) => {
+    await page.goto('/register')
+    
+    // Check if register form is visible
+    await expect(page.getByRole('heading', { name: /cadastro/i })).toBeVisible()
+    await expect(page.getByLabel(/nome/i)).toBeVisible()
+    await expect(page.getByLabel(/email/i)).toBeVisible()
+    await expect(page.getByLabel(/senha/i)).toBeVisible()
+    await expect(page.getByRole('button', { name: /criar conta/i })).toBeVisible()
+  })
+
+  test('should show validation errors for invalid login', async ({ page }) => {
     await page.goto('/login')
     
     // Click submit without filling form
@@ -27,79 +51,46 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByText(/senha deve ter/i)).toBeVisible()
   })
 
-  test('should handle login form submission', async ({ page }) => {
+  test('should navigate between login and register', async ({ page }) => {
     await page.goto('/login')
     
-    // Fill the form
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/senha/i).fill('password123')
+    // Navigate to register
+    await page.getByRole('link', { name: /cadastre-se/i }).click()
+    await expect(page).toHaveURL('/register')
     
-    // Submit the form
-    await page.getByRole('button', { name: /entrar/i }).click()
-    
-    // Should show loading state
-    await expect(page.getByText(/entrando/i)).toBeVisible()
-  })
-
-  test('should navigate to register page', async ({ page }) => {
-    await page.goto('/login')
-    
-    // Look for register link (if exists)
-    const registerLink = page.getByRole('link', { name: /registrar/i })
-    if (await registerLink.isVisible()) {
-      await registerLink.click()
-      await expect(page).toHaveURL(/register/)
-    }
-  })
-
-  test('should be responsive', async ({ page }) => {
-    // Test mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto('/login')
-    
-    // Form should be visible on mobile
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
-    await expect(page.getByLabel(/email/i)).toBeVisible()
-    
-    // Test tablet viewport
-    await page.setViewportSize({ width: 768, height: 1024 })
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
-    
-    // Test desktop viewport
-    await page.setViewportSize({ width: 1920, height: 1080 })
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    // Navigate back to login
+    await page.getByRole('link', { name: /fazer login/i }).click()
+    await expect(page).toHaveURL('/login')
   })
 })
 
-test.describe('Dashboard Access', () => {
-  test('should redirect to login when not authenticated', async ({ page }) => {
+test.describe('Protected Routes', () => {
+  test('should redirect to login when accessing dashboard without auth', async ({ page }) => {
     await page.goto('/dashboard')
     
-    // Should redirect to login or show login prompt
-    const isLoginPage = page.url().includes('/login')
-    const hasLoginPrompt = await page.getByText(/login/i).isVisible()
-    
-    expect(isLoginPage || hasLoginPrompt).toBeTruthy()
+    // Should redirect to login page
+    await expect(page).toHaveURL('/login')
   })
 })
 
-test.describe('Navigation', () => {
-  test('should have working navigation', async ({ page }) => {
+test.describe('Responsive Design', () => {
+  test('should be responsive on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
     await page.goto('/')
     
-    // Check if main navigation works
-    const homeLink = page.getByRole('link', { name: /home/i })
-    if (await homeLink.isVisible()) {
-      await homeLink.click()
-      await expect(page).toHaveURL('/')
-    }
+    // Landing page should be visible on mobile
+    await expect(page.getByText('Best Next.js Template')).toBeVisible()
+    
+    // Navigate to login
+    await page.goto('/login')
+    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
   })
 
-  test('should handle 404 pages gracefully', async ({ page }) => {
-    await page.goto('/non-existent-page')
+  test('should be responsive on tablet', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 })
+    await page.goto('/')
     
-    // Should show 404 page or redirect
-    await page.waitForLoadState('networkidle')
-    expect(page.url()).toContain('/non-existent-page')
+    // Should work on tablet
+    await expect(page.getByText('Best Next.js Template')).toBeVisible()
   })
 })

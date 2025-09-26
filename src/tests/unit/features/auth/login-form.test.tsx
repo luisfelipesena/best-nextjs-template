@@ -10,6 +10,16 @@ vi.mock('next/navigation', () => ({
   }),
 }))
 
+// Mock useAuth hook
+const mockSignIn = vi.fn()
+vi.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    signIn: {
+      email: mockSignIn,
+    },
+  }),
+}))
+
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -68,7 +78,9 @@ describe('LoginForm', () => {
     })
   })
 
-  it('should show loading state during submission', async () => {
+  it('should call signIn when form is submitted with valid data', async () => {
+    mockSignIn.mockResolvedValue({ data: { user: { id: '1' } } })
+    
     render(<LoginForm />)
     
     const emailInput = screen.getByLabelText(/email/i)
@@ -79,7 +91,11 @@ describe('LoginForm', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } })
     fireEvent.click(submitButton)
 
-    // Should show loading state briefly
-    expect(submitButton).toHaveTextContent(/entrando/i)
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+      })
+    })
   })
 })

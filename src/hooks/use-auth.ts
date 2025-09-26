@@ -9,8 +9,10 @@ export function useAuth() {
   const signUp = authClient.signUp
   const signOut = authClient.signOut
 
+  const isAuthenticated = !!session.data
+  
   const profileQuery = trpc.auth.profile.useQuery(undefined, {
-    enabled: !!session.data?.session,
+    enabled: isAuthenticated,
   })
 
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
@@ -23,10 +25,10 @@ export function useAuth() {
 
   return {
     // Session data
-    session: session.data?.session || null,
-    user: session.data?.user || null,
+    session: session.data || null,
+    user: session.data || null,
     isLoading: session.isPending,
-    isAuthenticated: !!session.data?.session,
+    isAuthenticated,
     error: session.error,
 
     // Auth actions
