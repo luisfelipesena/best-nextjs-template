@@ -7,7 +7,7 @@ export function useAuth() {
   const { user, session, isLoading, signIn, signUp, signOut, refetch } = useAuthContext()
 
   const isAuthenticated = !!user
-  
+
   const profileQuery = trpc.auth.profile.useQuery(undefined, {
     enabled: isAuthenticated,
   })
@@ -46,7 +46,7 @@ export function useAuth() {
     // Mutations
     updateProfile: updateProfileMutation.mutate,
     isUpdatingProfile: updateProfileMutation.isPending,
-    
+
     changePassword: changePasswordMutation.mutate,
     isChangingPassword: changePasswordMutation.isPending,
 

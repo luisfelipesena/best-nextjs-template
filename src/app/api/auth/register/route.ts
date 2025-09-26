@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Mock registration - in real app, this would save to database
     // For E2E tests, just simulate successful registration
     const cookieStore = await cookies()
-    
+
     // Set session cookie
     cookieStore.set('session', 'mock-session-token', {
       httpOnly: true,
@@ -35,15 +35,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: error.issues },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid input', details: error.issues }, { status: 400 })
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -8,7 +8,7 @@ test.describe('Template E2E Tests', () => {
 
   test('should load homepage', async ({ page }) => {
     await page.goto('/')
-    
+
     // Check if landing page loads correctly
     await expect(page.getByText('Best Next.js Template')).toBeVisible()
     await expect(page.locator('h1')).toContainText('Comece sua próxima aplicação')
@@ -16,10 +16,10 @@ test.describe('Template E2E Tests', () => {
 
   test('should navigate to login page', async ({ page }) => {
     await page.goto('/')
-    
+
     // Click login button
     await page.getByRole('link', { name: /entrar/i }).click()
-    
+
     // Should be on login page
     await expect(page).toHaveURL('/login')
     await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
@@ -27,10 +27,10 @@ test.describe('Template E2E Tests', () => {
 
   test('should show login form validation errors', async ({ page }) => {
     await page.goto('/login')
-    
+
     // Click submit without filling form
     await page.getByRole('button', { name: /entrar/i }).click()
-    
+
     // Should show validation errors
     await expect(page.getByText(/email inválido/i)).toBeVisible()
     await expect(page.getByText(/senha deve ter/i)).toBeVisible()
@@ -84,7 +84,7 @@ test.describe('Template E2E Tests', () => {
   test('should protect dashboard route', async ({ page }) => {
     // Try to access dashboard without authentication
     await page.goto('/dashboard')
-    
+
     // Should redirect to login
     await expect(page).toHaveURL('/login')
   })
@@ -95,13 +95,13 @@ test.describe('Template E2E Tests', () => {
     await page.getByLabel(/email/i).fill('test@example.com')
     await page.getByLabel(/senha/i).fill('password123')
     await page.getByRole('button', { name: /entrar/i }).click()
-    
+
     // 2. Should be authenticated
     await expect(page).toHaveURL('/dashboard')
-    
+
     // 3. Click logout
     await page.getByRole('button', { name: /sair/i }).click()
-    
+
     // 4. Should be logged out (try accessing dashboard)
     await page.goto('/dashboard')
     await expect(page).toHaveURL('/login')

@@ -1,13 +1,5 @@
 import { relations } from 'drizzle-orm'
-import {
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-  boolean,
-  decimal,
-  pgEnum,
-} from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, boolean, decimal, pgEnum } from 'drizzle-orm/pg-core'
 
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'moderator'])
@@ -168,4 +160,3 @@ export type UserPreferences = typeof userPreferences.$inferSelect
 export type NewUserPreferences = typeof userPreferences.$inferInsert
 export type Order = typeof orders.$inferSelect
 export type NewOrder = typeof orders.$inferInsert
-

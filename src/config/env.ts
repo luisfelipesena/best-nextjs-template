@@ -1,7 +1,7 @@
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { createEnv } from '@t3-oss/env-nextjs'
+import { z } from 'zod'
 
-const nodeEnv = process.env.NODE_ENV;
+const nodeEnv = process.env.NODE_ENV
 
 export const env = createEnv({
   server: {
@@ -26,4 +26,4 @@ export const env = createEnv({
   },
   skipValidation: nodeEnv === 'production',
   emptyStringAsUndefined: true,
-});
+})

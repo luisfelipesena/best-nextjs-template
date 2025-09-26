@@ -15,23 +15,18 @@ export const authRouter = createTRPCRouter({
     return service.getProfile()
   }),
 
-  updateProfile: protectedProcedure
-    .input(updateProfileDto)
-    .mutation(async ({ ctx, input }) => {
-      const service = new AuthService(ctx)
-      return service.updateProfile(input)
-    }),
+  updateProfile: protectedProcedure.input(updateProfileDto).mutation(async ({ ctx, input }) => {
+    const service = new AuthService(ctx)
+    return service.updateProfile(input)
+  }),
 
-  changePassword: protectedProcedure
-    .input(changePasswordDto)
-    .mutation(async ({ ctx, input }) => {
-      const service = new AuthService(ctx)
-      return service.changePassword(input)
-    }),
+  changePassword: protectedProcedure.input(changePasswordDto).mutation(async ({ ctx, input }) => {
+    const service = new AuthService(ctx)
+    return service.changePassword(input)
+  }),
 
   userStats: protectedProcedure.query(async ({ ctx }) => {
     const service = new AuthService(ctx)
     return service.getUserStats()
   }),
 })
-

@@ -26,4 +26,3 @@ export type LoginDto = z.infer<typeof loginDto>
 export type RegisterDto = z.infer<typeof registerDto>
 export type UpdateProfileDto = z.infer<typeof updateProfileDto>
 export type ChangePasswordDto = z.infer<typeof changePasswordDto>
-

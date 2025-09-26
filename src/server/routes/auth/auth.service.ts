@@ -94,7 +94,7 @@ export class AuthService {
       // 2. Hash new password
       // 3. Update password in database
       console.log('Password change requested for user:', session, 'New password length:', input.newPassword.length)
-      
+
       return { success: true, message: 'Senha alterada com sucesso' }
     } catch (error) {
       throw new TRPCError({
@@ -123,4 +123,3 @@ export class AuthService {
     }
   }
 }
-

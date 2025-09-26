@@ -28,7 +28,7 @@ export function RegisterForm() {
     try {
       // Validate with Zod
       const validatedData = RegisterSchema.parse(formData)
-      
+
       // Sign up with Better Auth
       const result = await signUp.email({
         email: validatedData.email,
@@ -59,13 +59,11 @@ export function RegisterForm() {
     }
   }
 
-  const handleChange = (field: keyof RegisterInput) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData(prev => ({ ...prev, [field]: e.target.value }))
+  const handleChange = (field: keyof RegisterInput) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+      setErrors((prev) => ({ ...prev, [field]: '' }))
     }
   }
 
@@ -73,18 +71,16 @@ export function RegisterForm() {
     <div className='mx-auto max-w-sm space-y-6'>
       <div className='space-y-2 text-center'>
         <h1 className='text-3xl font-bold'>Cadastro</h1>
-        <p className='text-gray-500 dark:text-gray-400'>
-          Crie sua conta para continuar
-        </p>
+        <p className='text-gray-500 dark:text-gray-400'>Crie sua conta para continuar</p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className='space-y-4'>
         {errors.general && (
           <div className='rounded-md bg-red-50 p-3'>
             <p className='text-sm text-red-500'>{errors.general}</p>
           </div>
         )}
-        
+
         <div className='space-y-2'>
           <label htmlFor='name' className='text-sm font-medium'>
             Nome
@@ -97,11 +93,9 @@ export function RegisterForm() {
             className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
             placeholder='Seu nome completo'
           />
-          {errors.name && (
-            <p className='text-sm text-red-500'>{errors.name}</p>
-          )}
+          {errors.name && <p className='text-sm text-red-500'>{errors.name}</p>}
         </div>
-        
+
         <div className='space-y-2'>
           <label htmlFor='email' className='text-sm font-medium'>
             Email
@@ -114,11 +108,9 @@ export function RegisterForm() {
             className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
             placeholder='seu@email.com'
           />
-          {errors.email && (
-            <p className='text-sm text-red-500'>{errors.email}</p>
-          )}
+          {errors.email && <p className='text-sm text-red-500'>{errors.email}</p>}
         </div>
-        
+
         <div className='space-y-2'>
           <label htmlFor='password' className='text-sm font-medium'>
             Senha
@@ -131,11 +123,9 @@ export function RegisterForm() {
             className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
             placeholder='••••••••'
           />
-          {errors.password && (
-            <p className='text-sm text-red-500'>{errors.password}</p>
-          )}
+          {errors.password && <p className='text-sm text-red-500'>{errors.password}</p>}
         </div>
-        
+
         <div className='space-y-2'>
           <label htmlFor='confirmPassword' className='text-sm font-medium'>
             Confirmar Senha
@@ -148,16 +138,14 @@ export function RegisterForm() {
             className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
             placeholder='••••••••'
           />
-          {errors.confirmPassword && (
-            <p className='text-sm text-red-500'>{errors.confirmPassword}</p>
-          )}
+          {errors.confirmPassword && <p className='text-sm text-red-500'>{errors.confirmPassword}</p>}
         </div>
-        
+
         <Button type='submit' className='w-full' disabled={isLoading}>
           {isLoading ? 'Criando conta...' : 'Criar conta'}
         </Button>
       </form>
-      
+
       <div className='text-center'>
         <p className='text-sm text-muted-foreground'>
           Já tem uma conta?{' '}

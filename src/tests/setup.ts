@@ -18,11 +18,13 @@ vi.mock('next/navigation', () => ({
 // Mock Next.js headers
 vi.mock('next/headers', () => ({
   headers: vi.fn(() => Promise.resolve(new Headers())),
-  cookies: vi.fn(() => Promise.resolve({
-    get: vi.fn(),
-    set: vi.fn(),
-    delete: vi.fn(),
-  })),
+  cookies: vi.fn(() =>
+    Promise.resolve({
+      get: vi.fn(),
+      set: vi.fn(),
+      delete: vi.fn(),
+    })
+  ),
 }))
 
 // Mock environment variables

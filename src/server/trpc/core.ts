@@ -11,8 +11,7 @@ const t = initTRPC.context<Context>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     }
   },
@@ -58,7 +57,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   // In real app, check if user has admin role from database
   const isAdmin = ctx.user.email === 'admin@example.com' // Mock admin check
-  
+
   if (!isAdmin) {
     throw new TRPCError({
       code: 'FORBIDDEN',

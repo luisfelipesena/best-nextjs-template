@@ -19,7 +19,11 @@ interface AuthContextType {
   session: AuthSession | null
   isLoading: boolean
   signIn: (credentials: { email: string; password: string }) => Promise<{ data?: User; error?: { message: string } }>
-  signUp: (credentials: { email: string; password: string; name: string }) => Promise<{ data?: User; error?: { message: string } }>
+  signUp: (credentials: {
+    email: string
+    password: string
+    name: string
+  }) => Promise<{ data?: User; error?: { message: string } }>
   signOut: () => Promise<void>
   refetch: () => Promise<void>
 }
@@ -35,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch('/api/auth/session')
       const data = await response.json()
-      
+
       if (data.user && data.session) {
         setUser(data.user)
         setSession(data.session)
@@ -66,9 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.user)
         await fetchSession()
         return { data: data.user }
-      } else {
-        return { error: { message: data.error || 'Login failed' } }
       }
+        return { error: { message: data.error || 'Login failed' } }
     } catch {
       return { error: { message: 'Network error' } }
     }
@@ -88,9 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.user)
         await fetchSession()
         return { data: data.user }
-      } else {
-        return { error: { message: data.error || 'Registration failed' } }
       }
+        return { error: { message: data.error || 'Registration failed' } }
     } catch {
       return { error: { message: 'Network error' } }
     }
