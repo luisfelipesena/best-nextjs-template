@@ -1,5 +1,12 @@
-import { authClient } from '@/providers/auth-provider'
+import { useAuthContext } from '@/providers/auth-provider'
 
 export function useAuthSession() {
-  return authClient.useSession()
+  const { user, session, isLoading, refetch } = useAuthContext()
+  
+  return {
+    data: session ? { user, session } : null,
+    isPending: isLoading,
+    error: null,
+    refetch,
+  }
 }

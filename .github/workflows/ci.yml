@@ -7,31 +7,10 @@ on:
     branches: [main]
 
 jobs:
+  # Job 1: Lint, TypeCheck, Unit Tests, Build
   test:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: nextjs_template_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nextjs_template_test
-      BETTER_AUTH_SECRET: test-secret-32-character-key-here-change-this
-      BETTER_AUTH_BASE_URL: http://localhost:3000
-      NEXT_PUBLIC_APP_NAME: Best Next.js Template
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NODE_ENV: test
+    name: Lint, TypeCheck, Unit Tests & Build
 
     steps:
       - name: Checkout code
@@ -58,11 +37,88 @@ jobs:
       - name: Build application
         run: npm run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+
+  # Job 2: E2E Tests with Docker
+  e2e:
+    runs-on: ubuntu-latest
+    name: E2E Tests with Docker
+    needs: test
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nextjs_template_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nextjs_template_e2e
+      BETTER_AUTH_SECRET: e2e-test-secret-32-character-key-here-change-this
+      BETTER_AUTH_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_NAME: Best Next.js Template E2E
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NODE_ENV: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+
+      - name: Setup database
+        run: |
+          npm run drizzle:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nextjs_template_e2e
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Start application
+        run: |
+          npm run start &
+          echo $! > app.pid
+        env:
+          PORT: 3000
+
+      - name: Wait for application to be ready
+        run: |
+          timeout 60s bash -c 'until curl -f http://localhost:3000/api/auth/session; do sleep 2; done'
+
       - name: Run E2E tests
         run: npm run test:e2e
+
+      - name: Stop application
+        run: |
+          if [ -f app.pid ]; then
+            kill $(cat app.pid) || true
+          fi
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

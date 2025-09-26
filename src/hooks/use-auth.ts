@@ -1,15 +1,12 @@
 'use client'
 
-import { authClient } from '@/providers/auth-provider'
+import { useAuthContext } from '@/providers/auth-provider'
 import { trpc } from '@/server/trpc/client'
 
 export function useAuth() {
-  const session = authClient.useSession()
-  const signIn = authClient.signIn
-  const signUp = authClient.signUp
-  const signOut = authClient.signOut
+  const { user, session, isLoading, signIn, signUp, signOut, refetch } = useAuthContext()
 
-  const isAuthenticated = !!session.data
+  const isAuthenticated = !!user
   
   const profileQuery = trpc.auth.profile.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -25,16 +22,22 @@ export function useAuth() {
 
   return {
     // Session data
-    session: session.data || null,
-    user: session.data || null,
-    isLoading: session.isPending,
+    session,
+    user,
+    isLoading,
     isAuthenticated,
-    error: session.error,
+    error: null,
 
     // Auth actions
-    signIn,
-    signUp,
-    signOut,
+    signIn: {
+      email: signIn,
+    },
+    signUp: {
+      email: signUp,
+    },
+    signOut: {
+      email: signOut,
+    },
 
     // Profile data
     profile: profileQuery.data,
@@ -48,7 +51,7 @@ export function useAuth() {
     isChangingPassword: changePasswordMutation.isPending,
 
     // Refetch functions
-    refetchSession: session.refetch,
+    refetchSession: refetch,
     refetchProfile: profileQuery.refetch,
   }
 }
