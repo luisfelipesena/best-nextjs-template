@@ -19,9 +19,7 @@
     "test:ci:full": "npm run test:ci && npm run test:e2e:install && npm run test:e2e",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
-    "drizzle:push": "drizzle-kit push",
-    "postinstall": "npm run prepare:playwright || true",
-    "prepare:playwright": "playwright install --with-deps"
+    "drizzle:push": "drizzle-kit push"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

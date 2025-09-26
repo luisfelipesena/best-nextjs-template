@@ -79,6 +79,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install additional dependencies
+        run: |
+          npm install --no-save autoprefixer postcss tailwindcss
+
       - name: Build application for E2E
         run: npm run build
 
