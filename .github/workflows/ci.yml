@@ -91,6 +91,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Kill any existing process on port 3000
+        run: |
+          sudo lsof -ti:3000 | xargs -r sudo kill -9 || true
+
       - name: Start application
         run: |
           npm run start &
