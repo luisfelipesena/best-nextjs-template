@@ -61,18 +61,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Start application
-        run: |
-          npm run build
-          npm run start &
-          sleep 10
-        env:
-          PORT: 3000
-
-      - name: Wait for application to be ready
-        run: |
-          timeout 60s bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
-
       - name: Run E2E tests
         run: npm run test:e2e
 

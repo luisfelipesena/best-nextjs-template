@@ -26,7 +26,8 @@ vi.mock('next/headers', () => ({
 }))
 
 // Mock environment variables
-Object.defineProperty(process.env, 'NODE_ENV', { value: 'test' })
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
 process.env.BETTER_AUTH_SECRET = 'test-secret-key-32-characters-long'
 process.env.BETTER_AUTH_BASE_URL = 'http://localhost:3000'
+process.env.NEXT_PUBLIC_APP_NAME = 'Test App'
+process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'

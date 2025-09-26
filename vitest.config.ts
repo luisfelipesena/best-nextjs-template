@@ -7,10 +7,11 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: ['./src/tests/setup.ts'],
     globals: true,
     css: true,
+    include: ['src/tests/unit/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
