@@ -389,6 +389,8 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - ✅ **MELHORADO**: Seletores de elementos mais robustos
 - ✅ **CONFIGURADO**: Modo de validação `onSubmit` com `reValidateMode: 'onChange'`
 - ✅ **AJUSTADO**: Textos esperados nos testes corrigidos
+- ✅ **RESOLVIDO**: Erro "trusted origin is invalid" no Better Auth
+- ✅ **OTIMIZADO**: Configuração robusta de variáveis de ambiente com fallbacks
 
 ### TypeScript & Build
 - ✅ **RESOLVIDO**: Erro de build com arquivos de teste incluídos

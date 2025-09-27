@@ -4,7 +4,7 @@ import { ReactNode, createContext, useContext, useState, useEffect } from 'react
 import { createAuthClient } from 'better-auth/react'
 
 const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
 })
 
 interface User {

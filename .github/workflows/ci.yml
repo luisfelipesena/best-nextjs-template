@@ -102,6 +102,10 @@ jobs:
           echo $! > app.pid
         env:
           PORT: 3000
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nextjs_template_e2e
+          BETTER_AUTH_SECRET: e2e-test-secret-32-character-key-here-change-this
+          BETTER_AUTH_BASE_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
 
       - name: Wait for application to be ready
         run: |

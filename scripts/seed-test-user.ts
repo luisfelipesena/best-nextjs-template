@@ -59,13 +59,14 @@ async function createTestUser() {
     console.log('📧 Email: test@example.com')
     console.log('🔑 Password: password123')
     console.log('👤 User ID:', testUser.id)
-  } catch (error: any) {
-    if (error.code === 'ECONNREFUSED') {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string }
+    if (err.code === 'ECONNREFUSED') {
       console.error('❌ Cannot connect to database. Make sure PostgreSQL is running and DATABASE_URL is correct.')
-    } else if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+    } else if (err.message?.includes('relation') && err.message?.includes('does not exist')) {
       console.error('❌ Database table "user" does not exist. Run migrations first: npm run drizzle:migrate')
     } else {
-      console.error('❌ Error creating test user:', error.message || error)
+      console.error('❌ Error creating test user:', err.message || String(error))
     }
     throw error
   } finally {

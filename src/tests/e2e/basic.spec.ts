@@ -6,6 +6,24 @@ test.describe('Template E2E Tests', () => {
     await context.clearCookies()
   })
 
+  // Add a test to verify the auth API is working
+  test('should verify auth API is working', async ({ request }) => {
+    // Test if the auth API endpoints are accessible
+    const sessionResponse = await request.get('/api/auth/session')
+    console.log('Session API status:', sessionResponse.status())
+    
+    // Try a login request directly to the API
+    const loginResponse = await request.post('/api/auth/sign-in/email', {
+      data: {
+        email: 'test@example.com',
+        password: 'password123'
+      }
+    })
+    console.log('Login API status:', loginResponse.status())
+    const loginBody = await loginResponse.text()
+    console.log('Login API response:', loginBody)
+  })
+
   test('should load homepage', async ({ page }) => {
     await page.goto('/')
 
@@ -56,6 +74,16 @@ test.describe('Template E2E Tests', () => {
     // 4. Submit form
     await page.getByRole('button', { name: /entrar/i }).click()
 
+    // Wait for navigation or error messages
+    await page.waitForTimeout(3000)
+
+    // Check if there are any error messages on the form
+    const errorMessage = page.locator('.text-red-500, .text-destructive')
+    if (await errorMessage.count() > 0) {
+      const errors = await errorMessage.allTextContents()
+      throw new Error(`Login failed with errors: ${errors.join(', ')}`)
+    }
+
     // 5. Should redirect to dashboard (wait for navigation)
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 })
@@ -71,14 +99,25 @@ test.describe('Template E2E Tests', () => {
     await page.goto('/register')
     await expect(page.getByText('Cadastro')).toBeVisible()
 
-    // 2. Fill register form
+    // 2. Fill register form with unique email
+    const uniqueEmail = `testuser${Date.now()}@example.com`
     await page.getByLabel(/nome/i).fill('Test User')
-    await page.getByLabel(/email/i).fill('newuser@example.com')
+    await page.getByLabel(/email/i).fill(uniqueEmail)
     await page.getByLabel(/senha/i).first().fill('password123')
     await page.getByLabel(/confirmar senha/i).fill('password123')
 
     // 3. Submit form
     await page.getByRole('button', { name: /criar conta/i }).click()
+
+    // Wait for navigation or error messages
+    await page.waitForTimeout(3000)
+
+    // Check if there are any error messages
+    const errorMessage = page.locator('.text-red-500, .text-destructive')
+    if (await errorMessage.count() > 0) {
+      const errors = await errorMessage.allTextContents()
+      throw new Error(`Registration failed with errors: ${errors.join(', ')}`)
+    }
 
     // 4. Should redirect to dashboard (wait for navigation)
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
@@ -99,6 +138,16 @@ test.describe('Template E2E Tests', () => {
     await page.getByLabel(/email/i).fill('test@example.com')
     await page.getByLabel(/senha/i).fill('password123')
     await page.getByRole('button', { name: /entrar/i }).click()
+
+    // Wait for login to complete
+    await page.waitForTimeout(3000)
+
+    // Check if login failed
+    const errorMessage = page.locator('.text-red-500, .text-destructive')
+    if (await errorMessage.count() > 0) {
+      const errors = await errorMessage.allTextContents()
+      throw new Error(`Login failed with errors: ${errors.join(', ')}`)
+    }
 
     // 2. Should be authenticated
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
