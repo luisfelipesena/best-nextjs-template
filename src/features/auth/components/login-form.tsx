@@ -1,66 +1,50 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { z } from 'zod'
+import { Input } from '@/components/ui/input'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { LoginSchema, type LoginInput } from '../types'
 import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export function LoginForm() {
-  const [formData, setFormData] = useState<LoginInput>({
-    email: '',
-    password: '',
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [generalError, setGeneralError] = useState<string>('')
   const router = useRouter()
   const { signIn } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrors({})
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (data: LoginInput) => {
+    setGeneralError('')
 
     try {
-      // Validate with Zod
-      const validatedData = LoginSchema.parse(formData)
-
       // Sign in with Better Auth
       const result = await signIn.email({
-        email: validatedData.email,
-        password: validatedData.password,
+        email: data.email,
+        password: data.password,
       })
 
       if (result.error) {
-        setErrors({ general: result.error.message })
+        setGeneralError(result.error.message)
       } else {
         // Redirect on success
         router.push('/dashboard')
       }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: Record<string, string> = {}
-        for (const err of error.issues) {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as string] = err.message
-          }
-        }
-        setErrors(fieldErrors)
-      } else {
-        setErrors({ general: 'Erro ao fazer login. Tente novamente.' })
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleChange = (field: keyof LoginInput) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }))
+    } catch {
+      setGeneralError('Erro ao fazer login. Tente novamente.')
     }
   }
 
@@ -71,10 +55,10 @@ export function LoginForm() {
         <p className='text-gray-500 dark:text-gray-400'>Entre com suas credenciais</p>
       </div>
 
-      <form onSubmit={handleSubmit} className='space-y-4'>
-        {errors.general && (
+      <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+        {generalError && (
           <div className='rounded-md bg-red-50 p-3'>
-            <p className='text-sm text-red-500'>{errors.general}</p>
+            <p className='text-sm text-red-500'>{generalError}</p>
           </div>
         )}
 
@@ -82,34 +66,30 @@ export function LoginForm() {
           <label htmlFor='email' className='text-sm font-medium'>
             Email
           </label>
-          <input
+          <Input
             id='email'
             type='email'
-            value={formData.email}
-            onChange={handleChange('email')}
-            className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            {...register('email')}
             placeholder='seu@email.com'
           />
-          {errors.email && <p className='text-sm text-red-500'>{errors.email}</p>}
+          {errors.email && <p className='text-sm text-red-500'>{errors.email.message}</p>}
         </div>
 
         <div className='space-y-2'>
           <label htmlFor='password' className='text-sm font-medium'>
             Senha
           </label>
-          <input
+          <Input
             id='password'
             type='password'
-            value={formData.password}
-            onChange={handleChange('password')}
-            className='w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            {...register('password')}
             placeholder='••••••••'
           />
-          {errors.password && <p className='text-sm text-red-500'>{errors.password}</p>}
+          {errors.password && <p className='text-sm text-red-500'>{errors.password.message}</p>}
         </div>
 
-        <Button type='submit' className='w-full' disabled={isLoading}>
-          {isLoading ? 'Entrando...' : 'Entrar'}
+        <Button type='submit' className='w-full' disabled={isSubmitting}>
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>
       </form>
 
