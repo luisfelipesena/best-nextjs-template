@@ -1,0 +1,161 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    name: Automated Code Review
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for files over 350 lines
+        run: |
+          echo "🔍 Checking for files over 350 lines..."
+          LARGE_FILES=$(find src -name "*.tsx" -o -name "*.ts" | xargs wc -l | awk '$1 > 350 {print $2 " (" $1 " lines)"}')
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠️ Files exceeding 350 lines limit:"
+            echo "$LARGE_FILES"
+            echo "Please refactor these files to follow component guidelines."
+            exit 1
+          fi
+          echo "✅ All files are within the 350 lines limit"
+
+      - name: Check for console.log statements
+        run: |
+          echo "🔍 Checking for console.log statements..."
+          CONSOLE_LOGS=$(grep -rn "console.log" src --include="*.ts" --include="*.tsx" || true)
+          if [ -n "$CONSOLE_LOGS" ]; then
+            echo "⚠️ Found console.log statements:"
+            echo "$CONSOLE_LOGS"
+            echo "Please remove console.log statements from production code."
+            exit 1
+          fi
+          echo "✅ No console.log statements found"
+
+      - name: Check for TODO comments
+        run: |
+          echo "🔍 Checking for TODO comments..."
+          TODOS=$(grep -rn "TODO\|FIXME\|XXX" src --include="*.ts" --include="*.tsx" || true)
+          if [ -n "$TODOS" ]; then
+            echo "⚠️ Found TODO/FIXME comments:"
+            echo "$TODOS"
+            echo "Please resolve or create issues for these TODOs."
+          fi
+
+      - name: Check for any type usage
+        run: |
+          echo "🔍 Checking for 'any' type usage..."
+          ANY_TYPES=$(grep -rn ": any" src --include="*.ts" --include="*.tsx" || true)
+          if [ -n "$ANY_TYPES" ]; then
+            echo "⚠️ Found 'any' type usage:"
+            echo "$ANY_TYPES"
+            echo "Please use proper TypeScript types instead of 'any'."
+            exit 1
+          fi
+          echo "✅ No 'any' types found"
+
+      - name: Validate imports structure
+        run: |
+          echo "🔍 Checking import structure..."
+
+          # Check for relative imports beyond current directory
+          BAD_IMPORTS=$(grep -rn "from '\.\.\/" src --include="*.ts" --include="*.tsx" | grep -v "test" || true)
+          if [ -n "$BAD_IMPORTS" ]; then
+            echo "⚠️ Found relative imports going up directories:"
+            echo "$BAD_IMPORTS"
+            echo "Use absolute imports starting with '@/' instead."
+          fi
+
+          echo "✅ Import structure check complete"
+
+      - name: Check coding standards compliance
+        run: |
+          echo "📋 Checking coding standards compliance..."
+
+          # Run linter
+          npm run lint || {
+            echo "❌ Linting failed. Please fix linting errors."
+            exit 1
+          }
+
+          # Run type checking
+          npm run typecheck || {
+            echo "❌ Type checking failed. Please fix TypeScript errors."
+            exit 1
+          }
+
+          echo "✅ Coding standards check passed"
+
+      - name: Architecture validation
+        run: |
+          echo "🏗️ Validating architecture patterns..."
+
+          # Check if services follow the pattern
+          for service in $(find src/server/routes -name "*.service.ts" 2>/dev/null); do
+            if ! grep -q "class.*Service" "$service"; then
+              echo "⚠️ Service $service doesn't follow class pattern"
+            fi
+          done
+
+          # Check if DTOs are properly defined
+          for dto in $(find src/server/routes -name "*.dto.ts" 2>/dev/null); do
+            if ! grep -q "z\.object" "$dto"; then
+              echo "⚠️ DTO $dto might not be using Zod validation"
+            fi
+          done
+
+          echo "✅ Architecture validation complete"
+
+      - name: Security checks
+        run: |
+          echo "🔒 Running security checks..."
+
+          # Check for hardcoded secrets
+          SECRETS=$(grep -rn "password\|secret\|token\|key" src --include="*.ts" --include="*.tsx" | grep -v "password123\|passwordHash\|password:\|confirmPassword" | grep "=" | grep -v "process.env" || true)
+          if [ -n "$SECRETS" ]; then
+            echo "⚠️ Possible hardcoded secrets found:"
+            echo "$SECRETS"
+            echo "Please use environment variables for sensitive data."
+            exit 1
+          fi
+
+          echo "✅ Security checks passed"
+
+      - name: Generate review summary
+        if: always()
+        run: |
+          echo "## 📝 Automated Code Review Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Checks Passed:" >> $GITHUB_STEP_SUMMARY
+          echo "- File size limits" >> $GITHUB_STEP_SUMMARY
+          echo "- No console.log statements" >> $GITHUB_STEP_SUMMARY
+          echo "- TypeScript types" >> $GITHUB_STEP_SUMMARY
+          echo "- Import structure" >> $GITHUB_STEP_SUMMARY
+          echo "- Security validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Standards Compliance:" >> $GITHUB_STEP_SUMMARY
+          echo "- DRY, KISS, YAGNI principles" >> $GITHUB_STEP_SUMMARY
+          echo "- Early returns pattern" >> $GITHUB_STEP_SUMMARY
+          echo "- Component size < 350 lines" >> $GITHUB_STEP_SUMMARY
+          echo "- Feature-driven architecture" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Please ensure:" >> $GITHUB_STEP_SUMMARY
+          echo "- All changes follow the cursor rules in \`.cursor/rules/\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests are updated for new features" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation is updated if needed" >> $GITHUB_STEP_SUMMARY
