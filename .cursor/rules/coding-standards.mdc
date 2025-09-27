@@ -14,6 +14,8 @@ Este projeto usa **Biome** para linting e formatting. As configurações estão 
 - Ponto e vírgula: apenas quando necessário
 - Largura de linha: 120 caracteres
 - Trailing commas: ES5
+- **Sempre busque seguir o DRY, KISS e YAGNI. Fora que, faça o uso de early returns sempre que possível ao invés de usar if/else.**
+- **Você é um desenvolvedor senior experiente e sabe o que está fazendo.**
 
 ### VSCode Settings
 O arquivo `.vscode/settings.json` está configurado para:

@@ -27,9 +27,23 @@ vi.mock('next/headers', () => ({
   ),
 }))
 
-// Mock environment variables
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
-process.env.BETTER_AUTH_SECRET = 'test-secret-key-32-characters-long'
+// Mock environment variables for testing
+process.env.DATABASE_URL = process.env.DATABASE_URL_TEST || 'postgresql://test:test@localhost:5432/test'
+process.env.BETTER_AUTH_SECRET = 'test-secret-key-32-characters-long-for-testing'
 process.env.BETTER_AUTH_BASE_URL = 'http://localhost:3000'
 process.env.NEXT_PUBLIC_APP_NAME = 'Test App'
 process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+
+// Mock Better Auth for unit tests
+vi.mock('better-auth/react', () => ({
+  createAuthClient: vi.fn(() => ({
+    getSession: vi.fn(() => Promise.resolve({ data: null })),
+    signIn: {
+      email: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    },
+    signUp: {
+      email: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    },
+    signOut: vi.fn(() => Promise.resolve()),
+  })),
+}))

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { auth } from '@/server/auth'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -11,28 +11,24 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email } = registerSchema.parse(body)
+    const { name, email, password } = registerSchema.parse(body)
 
-    // Mock registration - in real app, this would save to database
-    // For E2E tests, just simulate successful registration
-    const cookieStore = await cookies()
-
-    // Set session cookie
-    cookieStore.set('session', 'mock-session-token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 86400, // 24 hours
+    // Use Better Auth for registration
+    const result = await auth.api.signUpEmail({
+      body: { name, email, password },
+      headers: request.headers,
     })
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: 'mock-user-id',
-        name,
-        email,
-      },
-    })
+    // Check if result has user (success case)
+    if (result.user) {
+      return NextResponse.json({
+        success: true,
+        user: result.user,
+      })
+    }
+
+    // If no user, it's an error
+    return NextResponse.json({ error: 'Registration failed' }, { status: 400 })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid input', details: error.issues }, { status: 400 })

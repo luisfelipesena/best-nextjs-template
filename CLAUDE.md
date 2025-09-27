@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Best Next.js Template - A production-ready, full-stack Next.js 15 application with comprehensive testing and CI/CD infrastructure.
 
+- **Sempre busque seguir o DRY, KISS e YAGNI. Fora que, faça o uso de early returns sempre que possível ao invés de usar if/else.**
+- **Você é um desenvolvedor senior experiente e sabe o que está fazendo.**
+- **Sempre que preciso, leia .cursor/rules que lá possui as regras de arquitetura, padrões de código, etc.**
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)

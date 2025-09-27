@@ -19,10 +19,12 @@
     "test:ci:full": "npm run test:ci && npm run test:e2e:install && npm run test:e2e",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
-    "drizzle:push": "drizzle-kit push"
+    "drizzle:push": "drizzle-kit push",
+    "seed:test-user": "tsx scripts/seed-test-user.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@node-rs/argon2": "^2.0.2",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@t3-oss/env-nextjs": "^0.13.8",

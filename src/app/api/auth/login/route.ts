@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { auth } from '@/server/auth'
 import { z } from 'zod'
 
 const loginSchema = z.object({
@@ -12,28 +12,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password } = loginSchema.parse(body)
 
-    // Mock authentication - in real app, this would verify against database
-    if (email === 'test@example.com' && password === 'password123') {
-      const cookieStore = await cookies()
+    // Use Better Auth for authentication
+    const result = await auth.api.signInEmail({
+      body: { email, password },
+      headers: request.headers,
+    })
 
-      // Set session cookie
-      cookieStore.set('session', 'mock-session-token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 86400, // 24 hours
-      })
-
+    // Check if result has user (success case)
+    if (result.user) {
       return NextResponse.json({
         success: true,
-        user: {
-          id: 'mock-user-id',
-          name: 'Test User',
-          email: 'test@example.com',
-        },
+        user: result.user,
       })
     }
 
+    // If no user, it's an error
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   } catch (error) {
     if (error instanceof z.ZodError) {

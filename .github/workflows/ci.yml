@@ -84,7 +84,8 @@ jobs:
 
       - name: Setup database
         run: |
-          npm run drizzle:push
+          npm run drizzle:migrate
+          npm run seed:test-user
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nextjs_template_e2e
 

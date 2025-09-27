@@ -23,40 +23,34 @@ export const publicProcedure = t.procedure
 
 interface AuthenticatedContext extends Context {
   session: NonNullable<Context['auth']['session']>
-  user: {
-    id: string
-    email: string
-    name?: string
-  }
+  user: NonNullable<Context['auth']['user']>
 }
 
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if (!ctx.auth?.session) {
+  if (!ctx.auth?.session || !ctx.auth?.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'Você precisa estar logado para acessar este recurso',
     })
   }
 
-  // Mock user data - in real app, this would come from the session
-  const user = {
-    id: 'mock-user-id',
-    email: 'user@example.com',
-    name: 'Mock User',
-  }
-
   return next({
     ctx: {
       ...ctx,
       session: ctx.auth.session,
-      user,
+      user: ctx.auth.user,
     } satisfies AuthenticatedContext,
   })
 })
 
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  // In real app, check if user has admin role from database
-  const isAdmin = ctx.user.email === 'admin@example.com' // Mock admin check
+  // Check if user has admin role from database
+  const user = await ctx.db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.id, ctx.user.id),
+    columns: { role: true },
+  })
+
+  const isAdmin = user?.role === 'admin'
 
   if (!isAdmin) {
     throw new TRPCError({

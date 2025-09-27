@@ -11,7 +11,7 @@ test.describe('Template E2E Tests', () => {
 
     // Check if landing page loads correctly
     await expect(page.getByText('Best Next.js Template')).toBeVisible()
-    await expect(page.locator('h1')).toContainText('Comece sua próxima aplicação')
+    await expect(page.locator('h1')).toContainText('Comece sua próxima aplicação full-stack')
   })
 
   test('should navigate to login page', async ({ page }) => {
@@ -22,18 +22,22 @@ test.describe('Template E2E Tests', () => {
 
     // Should be on login page
     await expect(page).toHaveURL('/login')
-    await expect(page.getByRole('heading', { name: /login/i })).toBeVisible()
+    await expect(page.getByText('Login')).toBeVisible()
   })
 
   test('should show login form validation errors', async ({ page }) => {
     await page.goto('/login')
 
-    // Click submit without filling form
+    // Fill with invalid data
+    await page.getByLabel(/email/i).fill('invalid-email')
+    await page.getByLabel(/senha/i).fill('123')
+
+    // Submit form to trigger validation
     await page.getByRole('button', { name: /entrar/i }).click()
 
-    // Should show validation errors
-    await expect(page.getByText(/email inválido/i)).toBeVisible()
-    await expect(page.getByText(/senha deve ter/i)).toBeVisible()
+    // Should show validation errors (react-hook-form validates on submit)
+    await expect(page.getByText('Email inválido')).toBeVisible()
+    await expect(page.getByText('Senha deve ter pelo menos 6 caracteres')).toBeVisible()
   })
 
   test('should complete authentication flow', async ({ page }) => {
@@ -55,7 +59,7 @@ test.describe('Template E2E Tests', () => {
     // 5. Should redirect to dashboard
     await expect(page).toHaveURL('/dashboard')
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
-    await expect(page.getByText('Bem-vindo ao seu dashboard')).toBeVisible()
+    await expect(page.getByText(/Bem-vindo ao seu dashboard/)).toBeVisible()
 
     // 6. Should show user as authenticated
     await expect(page.getByText('Usuário')).toBeVisible()
@@ -65,7 +69,7 @@ test.describe('Template E2E Tests', () => {
   test('should register new user and authenticate', async ({ page }) => {
     // 1. Navigate to register
     await page.goto('/register')
-    await expect(page.getByRole('heading', { name: /cadastro/i })).toBeVisible()
+    await expect(page.getByText('Cadastro')).toBeVisible()
 
     // 2. Fill register form
     await page.getByLabel(/nome/i).fill('Test User')

@@ -1,10 +1,13 @@
 import { TRPCError } from '@trpc/server'
+import { eq, count, and } from 'drizzle-orm'
+import { hash, verify } from '@node-rs/argon2'
 import type { Context } from '@/server/trpc/context'
+import { users, activityLogs } from '@/server/db/schema'
 import type { UpdateProfileDto, ChangePasswordDto } from './auth.dto'
 
 interface UserProfile {
   id: string
-  name: string
+  name: string | null
   email: string
   createdAt: Date
   updatedAt: Date
@@ -12,7 +15,7 @@ interface UserProfile {
 
 interface UserStats {
   totalLogins: number
-  lastLogin: Date
+  lastLogin: Date | null
   accountCreated: Date
   profileCompleteness: number
 }
@@ -35,27 +38,39 @@ export class AuthService {
   }
 
   async getProfile(): Promise<UserProfile> {
-    const session = this.ctx.auth?.session
-    if (!session) {
+    const user = this.ctx.auth?.user
+    if (!user) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para acessar seu perfil',
       })
     }
 
-    // Mock user profile - in real app, this would come from database
-    return {
-      id: 'mock-user-id',
-      name: 'Mock User',
-      email: 'user@example.com',
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(),
+    // Get user data from database
+    const dbUser = await this.ctx.db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, user.id),
+      columns: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+
+    if (!dbUser) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Perfil de usuário não encontrado',
+      })
     }
+
+    return dbUser
   }
 
   async updateProfile(input: UpdateProfileDto): Promise<UpdateProfileResponse> {
-    const session = this.ctx.auth?.session
-    if (!session) {
+    const user = this.ctx.auth?.user
+    if (!user) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para atualizar seu perfil',
@@ -63,14 +78,34 @@ export class AuthService {
     }
 
     try {
-      // In real app, update user in database using Drizzle
-      const updated: UpdateProfileResponse = {
-        id: 'mock-user-id',
-        name: input.name,
+      // Update user in database using Drizzle
+      const [updatedUser] = await this.ctx.db
+        .update(users)
+        .set({
+          name: input.name,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+        .returning({
+          id: users.id,
+          name: users.name,
+        })
+
+      if (!updatedUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Usuário não encontrado',
+        })
       }
 
-      return updated
+      return {
+        id: updatedUser.id,
+        name: updatedUser.name || '',
+      }
     } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error
+      }
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erro ao atualizar perfil',
@@ -80,8 +115,8 @@ export class AuthService {
   }
 
   async changePassword(input: ChangePasswordDto): Promise<ChangePasswordResponse> {
-    const session = this.ctx.auth?.session
-    if (!session) {
+    const user = this.ctx.auth?.user
+    if (!user) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para alterar sua senha',
@@ -89,14 +124,50 @@ export class AuthService {
     }
 
     try {
-      // In real app:
-      // 1. Verify current password against database
-      // 2. Hash new password
-      // 3. Update password in database
-      console.log('Password change requested for user:', session, 'New password length:', input.newPassword.length)
+      // Get current user with password hash
+      const dbUser = await this.ctx.db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, user.id),
+        columns: {
+          id: true,
+          passwordHash: true,
+        },
+      })
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Usuário não encontrado',
+        })
+      }
+
+      // Verify current password if provided
+      if (input.currentPassword && dbUser.passwordHash) {
+        const isValidPassword = await verify(dbUser.passwordHash, input.currentPassword)
+        if (!isValidPassword) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'Senha atual incorreta',
+          })
+        }
+      }
+
+      // Hash new password
+      const newPasswordHash = await hash(input.newPassword)
+
+      // Update password in database
+      await this.ctx.db
+        .update(users)
+        .set({
+          passwordHash: newPasswordHash,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
 
       return { success: true, message: 'Senha alterada com sucesso' }
     } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error
+      }
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erro ao alterar senha',
@@ -106,20 +177,62 @@ export class AuthService {
   }
 
   async getUserStats(): Promise<UserStats> {
-    const session = this.ctx.auth?.session
-    if (!session) {
+    const user = this.ctx.auth?.user
+    if (!user) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para ver estatísticas',
       })
     }
 
-    // Mock stats - in real app, calculate from database
-    return {
-      totalLogins: 42,
-      lastLogin: new Date(),
-      accountCreated: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-      profileCompleteness: 85,
+    try {
+      // Get user data
+      const dbUser = await this.ctx.db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, user.id),
+        columns: {
+          createdAt: true,
+          lastLoginAt: true,
+          name: true,
+          email: true,
+          imageUrl: true,
+        },
+      })
+
+      if (!dbUser) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Usuário não encontrado',
+        })
+      }
+
+      // Count login activities
+      const loginCount = await this.ctx.db
+        .select({ count: count() })
+        .from(activityLogs)
+        .where(and(eq(activityLogs.userId, user.id), eq(activityLogs.type, 'user_login')))
+
+      // Calculate profile completeness
+      let completeness = 0
+      if (dbUser.name) completeness += 25
+      if (dbUser.email) completeness += 25
+      if (dbUser.imageUrl) completeness += 25
+      completeness += 25 // For having an account
+
+      return {
+        totalLogins: loginCount[0]?.count || 0,
+        lastLogin: dbUser.lastLoginAt,
+        accountCreated: dbUser.createdAt,
+        profileCompleteness: completeness,
+      }
+    } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error
+      }
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Erro ao obter estatísticas',
+        cause: error,
+      })
     }
   }
 }

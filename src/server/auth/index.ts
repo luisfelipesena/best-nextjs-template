@@ -5,7 +5,10 @@ import { authConfig } from './config'
 
 export const auth = betterAuth({
   ...authConfig,
-  adapter: drizzleAdapter(db, { schema, provider: 'pg' }),
+  database: drizzleAdapter(db, {
+    provider: 'pg',
+    schema: schema,
+  }),
   session: {
     cookieCache: {
       enabled: true,

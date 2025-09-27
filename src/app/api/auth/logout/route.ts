@@ -1,11 +1,17 @@
-import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/server/auth'
+import { headers } from 'next/headers'
 
-export async function POST() {
-  const cookieStore = await cookies()
+export async function POST(request: NextRequest) {
+  try {
+    // Use Better Auth to sign out
+    await auth.api.signOut({
+      headers: await headers(),
+    })
 
-  // Clear session cookie
-  cookieStore.delete('session')
-
-  return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error during logout:', error)
+    return NextResponse.json({ error: 'Logout failed' }, { status: 500 })
+  }
 }

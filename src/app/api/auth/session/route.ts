@@ -1,24 +1,24 @@
-import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/server/auth'
+import { headers } from 'next/headers'
 
-export async function GET() {
-  const cookieStore = await cookies()
-  const sessionToken = cookieStore.get('session')
-
-  if (sessionToken?.value === 'mock-session-token') {
-    return NextResponse.json({
-      session: {
-        id: 'mock-session-id',
-        userId: 'mock-user-id',
-        expiresAt: new Date(Date.now() + 86400000), // 24 hours
-      },
-      user: {
-        id: 'mock-user-id',
-        name: 'Test User',
-        email: 'test@example.com',
-      },
+export async function GET(request: NextRequest) {
+  try {
+    // Get session from Better Auth
+    const sessionData = await auth.api.getSession({
+      headers: await headers(),
     })
-  }
 
-  return NextResponse.json({ session: null, user: null })
+    if (sessionData?.session && sessionData?.user) {
+      return NextResponse.json({
+        session: sessionData.session,
+        user: sessionData.user,
+      })
+    }
+
+    return NextResponse.json({ session: null, user: null })
+  } catch (error) {
+    console.error('Error getting session:', error)
+    return NextResponse.json({ session: null, user: null })
+  }
 }

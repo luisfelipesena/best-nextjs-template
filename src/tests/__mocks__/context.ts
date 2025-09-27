@@ -25,7 +25,10 @@ export function createMockContext(): Context {
     db: mockDb as unknown as Context['db'],
     auth: {
       session: null, // Mock context starts with no session
+      user: null,
     },
+    req: undefined,
+    res: undefined,
   }
 }
 
@@ -50,7 +53,18 @@ export function createMockContextWithAuth(): Context {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+        image: null,
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     },
+    req: undefined,
+    res: undefined,
   }
 }
 

@@ -1,10 +1,15 @@
 'use client'
 
 import { ReactNode, createContext, useContext, useState, useEffect } from 'react'
+import { createAuthClient } from 'better-auth/react'
+
+const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+})
 
 interface User {
   id: string
-  name: string
+  name: string | null
   email: string
 }
 
@@ -37,12 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchSession = async () => {
     try {
-      const response = await fetch('/api/auth/session')
-      const data = await response.json()
+      const sessionData = await authClient.getSession()
 
-      if (data.user && data.session) {
-        setUser(data.user)
-        setSession(data.session)
+      if (sessionData.data?.user && sessionData.data?.session) {
+        setUser(sessionData.data.user)
+        setSession(sessionData.data.session)
       } else {
         setUser(null)
         setSession(null)
@@ -58,49 +62,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (credentials: { email: string; password: string }) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
+      const result = await authClient.signIn.email({
+        email: credentials.email,
+        password: credentials.password,
       })
 
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        setUser(data.user)
-        await fetchSession()
-        return { data: data.user }
+      if (result.error) {
+        return { error: { message: result.error.message || 'Login failed' } }
       }
-        return { error: { message: data.error || 'Login failed' } }
-    } catch {
+
+      if (result.data?.user) {
+        const userData = result.data.user
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        })
+        // Session will be handled by Better Auth cookies
+        setSession({
+          id: 'session-id',
+          userId: userData.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        })
+        return {
+          data: {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+          },
+        }
+      }
+
+      return { error: { message: 'Login failed' } }
+    } catch (err) {
+      console.error('Sign in error:', err)
       return { error: { message: 'Network error' } }
     }
   }
 
   const signUp = async (credentials: { email: string; password: string; name: string }) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
+      const result = await authClient.signUp.email({
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.name,
       })
 
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        setUser(data.user)
-        await fetchSession()
-        return { data: data.user }
+      if (result.error) {
+        return { error: { message: result.error.message || 'Registration failed' } }
       }
-        return { error: { message: data.error || 'Registration failed' } }
-    } catch {
+
+      if (result.data?.user) {
+        const userData = result.data.user
+        setUser({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        })
+        // Session will be handled by Better Auth cookies
+        setSession({
+          id: 'session-id',
+          userId: userData.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        })
+        return {
+          data: {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+          },
+        }
+      }
+
+      return { error: { message: 'Registration failed' } }
+    } catch (err) {
+      console.error('Sign up error:', err)
       return { error: { message: 'Network error' } }
     }
   }
 
   const signOut = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await authClient.signOut()
       setUser(null)
       setSession(null)
     } catch (err) {
@@ -133,7 +176,5 @@ export function useAuthContext() {
   return context
 }
 
-// Export for compatibility with existing code
-export const authClient = {
-  // These will be used by legacy hooks if needed
-}
+// Export the auth client for direct use if needed
+export { authClient }
