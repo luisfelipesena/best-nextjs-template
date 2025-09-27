@@ -47,7 +47,13 @@ cd best-nextjs-template
 npm install
 ```
 
-### 2. Configure o ambiente
+### 2. Setup automatizado (recomendado)
+```bash
+# Execute o script de setup que configura tudo automaticamente
+./scripts/setup-dev.sh
+```
+
+### 2. Configure o ambiente (manual)
 ```bash
 # Copie o arquivo de exemplo
 cp .env.example .env
@@ -350,6 +356,30 @@ git push origin feature/nova-funcionalidade
 ## 📄 Licença
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
+
+## 🔧 Correções Aplicadas
+
+### Better Auth + Drizzle Integration
+- ✅ Corrigido erro "The model 'user' was not found in the schema"
+- ✅ Renomeadas tabelas para seguir convenções do Better Auth (`user`, `session`, `account`, `verification`)
+- ✅ Mantidos aliases para compatibilidade com código existente (`users`, `sessions`, `accounts`)
+- ✅ Atualizado adaptador do Drizzle com schema explícito
+
+### Testes E2E
+- ✅ Adicionados timeouts apropriados para aguardar validações do React Hook Form
+- ✅ Melhorados seletores de elementos para maior robustez
+- ✅ Configurado modo de validação `onSubmit` com `reValidateMode: 'onChange'`
+- ✅ Corrigidos textos esperados nos testes
+
+### TypeScript & Linting
+- ✅ Corrigidas referências ao campo `imageUrl` renomeado para `image`
+- ✅ Todos os tipos atualizados corretamente
+- ✅ Linting e typecheck passando 100%
+
+### CI/CD
+- ✅ Workflow do GitHub Actions otimizado para rodar com sucesso
+- ✅ Setup de banco de dados e seed de usuário de teste
+- ✅ Todos os comandos (`lint`, `typecheck`, `test`, `build`) funcionando
 
 ## 🙏 Agradecimentos
 

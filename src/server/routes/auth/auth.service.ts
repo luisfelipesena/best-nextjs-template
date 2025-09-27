@@ -194,7 +194,7 @@ export class AuthService {
           lastLoginAt: true,
           name: true,
           email: true,
-          imageUrl: true,
+          image: true,
         },
       })
 
@@ -215,7 +215,7 @@ export class AuthService {
       let completeness = 0
       if (dbUser.name) completeness += 25
       if (dbUser.email) completeness += 25
-      if (dbUser.imageUrl) completeness += 25
+      if (dbUser.image) completeness += 25
       completeness += 25 // For having an account
 
       return {

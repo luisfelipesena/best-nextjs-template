@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { hash } from '@node-rs/argon2'
-import { users } from '@/server/db/schema'
+import { user } from '@/server/db/schema'
 import { eq } from 'drizzle-orm'
 
 async function createTestUser() {
@@ -9,14 +9,14 @@ async function createTestUser() {
     connectionString: process.env.DATABASE_URL,
   })
 
-  const db = drizzle(pool, { schema: { users } })
+  const db = drizzle(pool, { schema: { user } })
 
   try {
     // Check if test user already exists
     const existingUser = await db
       .select()
-      .from(users)
-      .where(eq(users.email, 'test@example.com'))
+      .from(user)
+      .where(eq(user.email, 'test@example.com'))
       .limit(1)
 
     if (existingUser.length > 0) {
@@ -29,7 +29,7 @@ async function createTestUser() {
 
     // Create test user
     const [testUser] = await db
-      .insert(users)
+      .insert(user)
       .values({
         email: 'test@example.com',
         name: 'Test User',

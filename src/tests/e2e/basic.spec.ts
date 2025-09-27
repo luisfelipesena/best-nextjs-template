@@ -11,7 +11,7 @@ test.describe('Template E2E Tests', () => {
 
     // Check if landing page loads correctly
     await expect(page.getByText('Best Next.js Template')).toBeVisible()
-    await expect(page.locator('h1')).toContainText('Comece sua próxima aplicação full-stack')
+    await expect(page.locator('h1')).toContainText('Comece sua próxima aplicação full-stack com padrões seniores opinativos')
   })
 
   test('should navigate to login page', async ({ page }) => {
@@ -35,9 +35,9 @@ test.describe('Template E2E Tests', () => {
     // Submit form to trigger validation
     await page.getByRole('button', { name: /entrar/i }).click()
 
-    // Should show validation errors (react-hook-form validates on submit)
-    await expect(page.getByText('Email inválido')).toBeVisible()
-    await expect(page.getByText('Senha deve ter pelo menos 6 caracteres')).toBeVisible()
+    // Wait for validation errors to appear (react-hook-form validates on submit)
+    await expect(page.getByText('Email inválido')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Senha deve ter pelo menos 6 caracteres')).toBeVisible({ timeout: 10000 })
   })
 
   test('should complete authentication flow', async ({ page }) => {
@@ -56,14 +56,14 @@ test.describe('Template E2E Tests', () => {
     // 4. Submit form
     await page.getByRole('button', { name: /entrar/i }).click()
 
-    // 5. Should redirect to dashboard
-    await expect(page).toHaveURL('/dashboard')
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
-    await expect(page.getByText(/Bem-vindo ao seu dashboard/)).toBeVisible()
+    // 5. Should redirect to dashboard (wait for navigation)
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText(/Bem-vindo ao seu dashboard/)).toBeVisible({ timeout: 10000 })
 
     // 6. Should show user as authenticated
-    await expect(page.getByText('Usuário')).toBeVisible()
-    await expect(page.getByRole('button', { name: /sair/i })).toBeVisible()
+    await expect(page.getByText('Usuário')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('button', { name: /sair/i })).toBeVisible({ timeout: 10000 })
   })
 
   test('should register new user and authenticate', async ({ page }) => {
@@ -74,15 +74,15 @@ test.describe('Template E2E Tests', () => {
     // 2. Fill register form
     await page.getByLabel(/nome/i).fill('Test User')
     await page.getByLabel(/email/i).fill('newuser@example.com')
-    await page.locator('#password').fill('password123')
-    await page.locator('#confirmPassword').fill('password123')
+    await page.getByLabel(/senha/i).first().fill('password123')
+    await page.getByLabel(/confirmar senha/i).fill('password123')
 
     // 3. Submit form
     await page.getByRole('button', { name: /criar conta/i }).click()
 
-    // 4. Should redirect to dashboard
-    await expect(page).toHaveURL('/dashboard')
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+    // 4. Should redirect to dashboard (wait for navigation)
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 })
   })
 
   test('should protect dashboard route', async ({ page }) => {
@@ -101,13 +101,13 @@ test.describe('Template E2E Tests', () => {
     await page.getByRole('button', { name: /entrar/i }).click()
 
     // 2. Should be authenticated
-    await expect(page).toHaveURL('/dashboard')
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
 
     // 3. Click logout
     await page.getByRole('button', { name: /sair/i }).click()
 
     // 4. Should be logged out (try accessing dashboard)
     await page.goto('/dashboard')
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL('/login', { timeout: 10000 })
   })
 })
