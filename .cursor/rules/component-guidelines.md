@@ -351,40 +351,163 @@ function UserList() {
 }
 ```
 
-### 3. **Form State**
+### 3. **Form State (React Hook Form + Zod)**
 ```typescript
-// ✅ Bom: Form state com hook personalizado
-function useForm<T>(initialValues: T, validationSchema: z.ZodSchema<T>) {
-  const [values, setValues] = useState(initialValues)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+// ✅ OBRIGATÓRIO: Sempre usar React Hook Form + Zod para formulários
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
-  const setValue = (field: keyof T, value: any) => {
-    setValues(prev => ({ ...prev, [field]: value }))
-    if (errors[field as string]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
-    }
+const formSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+})
+
+type FormData = z.infer<typeof formSchema>
+
+function LoginForm() {
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (values: FormData) => {
+    // Handle form submission
   }
 
-  const validate = () => {
-    try {
-      validationSchema.parse(values)
-      setErrors({})
-      return true
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const fieldErrors: Record<string, string> = {}
-        err.errors.forEach(error => {
-          if (error.path[0]) {
-            fieldErrors[error.path[0] as string] = error.message
-          }
-        })
-        setErrors(fieldErrors)
-      }
-      return false
-    }
-  }
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="seu@email.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Senha</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button type="submit">Entrar</Button>
+      </form>
+    </Form>
+  )
+}
+```
 
-  return { values, errors, setValue, validate }
+### 4. **Data Tables (TanStack Table)**
+```typescript
+// ✅ OBRIGATÓRIO: Sempre usar DataTable para listagens
+import { DataTable } from '@/components/ui/data-table'
+import { ColumnDef } from '@tanstack/react-table'
+
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Nome',
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+  },
+]
+
+function UsersPage() {
+  const { data: users } = trpc.users.getAll.useQuery()
+
+  return (
+    <DataTable
+      columns={columns}
+      data={users || []}
+      searchKey="name"
+      searchPlaceholder="Buscar usuários..."
+    />
+  )
+}
+```
+
+### 5. **Calendar Components**
+```typescript
+// ✅ OBRIGATÓRIO: Sempre usar Calendar do Shadcn para datas
+import { Calendar } from '@/components/ui/calendar'
+import { useState } from 'react'
+
+function DatePicker() {
+  const [date, setDate] = useState<Date | undefined>(new Date())
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      className="rounded-md border"
+    />
+  )
+}
+
+// Para formulários com datas
+function EventForm() {
+  const form = useForm<{ eventDate: Date }>({
+    resolver: zodResolver(eventSchema),
+  })
+
+  return (
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="eventDate"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>Data do Evento</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button variant="outline">
+                    {field.value ? format(field.value, "PPP") : "Selecione uma data"}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={field.onChange}
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </Form>
+  )
 }
 ```
 
@@ -552,6 +675,34 @@ function UserList() {
 <div className="bg-blue-500 p-4 rounded-lg">
 ```
 
+## 📚 Componentes Shadcn/UI Obrigatórios
+
+### **SEMPRE usar componentes do Shadcn/UI:**
+- ✅ **Formulários:** `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`
+- ✅ **Inputs:** `Input`, `Button`, `Label`
+- ✅ **Tabelas:** `DataTable` (com TanStack Table)
+- ✅ **Calendário:** `Calendar` (com react-day-picker)
+- ✅ **Layout:** `Card`, `CardHeader`, `CardContent`, `CardFooter`
+
+### **Instalação de novos componentes:**
+```bash
+# Sempre usar o CLI oficial
+npx shadcn@latest add [component-name]
+
+# Exemplos
+npx shadcn@latest add form
+npx shadcn@latest add data-table
+npx shadcn@latest add calendar
+npx shadcn@latest add popover
+npx shadcn@latest add select
+```
+
+### **Customização:**
+- ✅ Modificar apenas via Tailwind classes
+- ✅ Usar `cn()` utility para merge de classes
+- ✅ Manter acessibilidade dos componentes base
+- ❌ Nunca modificar os arquivos base do Shadcn
+
 ## 📋 Checklist de Review
 
 Antes de fazer commit de um componente, verificar:
@@ -560,6 +711,9 @@ Antes de fazer commit de um componente, verificar:
 - [ ] Tem uma única responsabilidade?
 - [ ] Props são tipadas corretamente?
 - [ ] Usa Tailwind ao invés de CSS inline?
+- [ ] **Usa React Hook Form + Zod para formulários?**
+- [ ] **Usa DataTable para listagens?**
+- [ ] **Usa componentes Shadcn/UI quando disponíveis?**
 - [ ] Tem testes unitários?
 - [ ] É acessível (a11y)?
 - [ ] Funciona em mobile?

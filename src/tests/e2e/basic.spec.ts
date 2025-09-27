@@ -31,7 +31,7 @@ test.describe('Template E2E Tests', () => {
     // Click submit without filling form
     await page.getByRole('button', { name: /entrar/i }).click()
 
-    // Should show validation errors
+    // Should show validation errors (React Hook Form)
     await expect(page.getByText(/email inválido/i)).toBeVisible()
     await expect(page.getByText(/senha deve ter/i)).toBeVisible()
   })
@@ -46,8 +46,8 @@ test.describe('Template E2E Tests', () => {
     await expect(page).toHaveURL('/login')
 
     // 3. Fill login form with valid credentials
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/senha/i).fill('password123')
+    await page.locator('input[name="email"]').fill('test@example.com')
+    await page.locator('input[name="password"]').fill('password123')
 
     // 4. Submit form
     await page.getByRole('button', { name: /entrar/i }).click()
@@ -68,10 +68,10 @@ test.describe('Template E2E Tests', () => {
     await expect(page.getByRole('heading', { name: /cadastro/i })).toBeVisible()
 
     // 2. Fill register form
-    await page.getByLabel(/nome/i).fill('Test User')
-    await page.getByLabel(/email/i).fill('newuser@example.com')
-    await page.locator('#password').fill('password123')
-    await page.locator('#confirmPassword').fill('password123')
+    await page.locator('input[name="name"]').fill('Test User')
+    await page.locator('input[name="email"]').fill('newuser@example.com')
+    await page.locator('input[name="password"]').fill('password123')
+    await page.locator('input[name="confirmPassword"]').fill('password123')
 
     // 3. Submit form
     await page.getByRole('button', { name: /criar conta/i }).click()
@@ -92,8 +92,8 @@ test.describe('Template E2E Tests', () => {
   test('should logout successfully', async ({ page }) => {
     // 1. Login first
     await page.goto('/login')
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/senha/i).fill('password123')
+    await page.locator('input[name="email"]').fill('test@example.com')
+    await page.locator('input[name="password"]').fill('password123')
     await page.getByRole('button', { name: /entrar/i }).click()
 
     // 2. Should be authenticated
