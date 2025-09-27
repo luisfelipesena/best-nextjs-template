@@ -380,6 +380,8 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - ✅ Workflow do GitHub Actions otimizado para rodar com sucesso
 - ✅ Setup de banco de dados e seed de usuário de teste
 - ✅ Todos os comandos (`lint`, `typecheck`, `test`, `build`) funcionando
+- ✅ Configuração TypeScript otimizada para excluir arquivos de teste do build
+- ✅ `tsconfig.test.json` separado para configurações específicas de teste
 
 ## 🙏 Agradecimentos
 
