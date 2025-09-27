@@ -59,6 +59,34 @@ async function createTestUser() {
     console.log('📧 Email: test@example.com')
     console.log('🔑 Password: password123')
     console.log('👤 User ID:', testUser.id)
+
+    // Also create E2E test user
+    const existingE2EUser = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, 'e2e-test@example.com'))
+      .limit(1)
+
+    if (existingE2EUser.length === 0) {
+      const [e2eUser] = await db
+        .insert(user)
+        .values({
+          email: 'e2e-test@example.com',
+          name: 'E2E Test User',
+          passwordHash,
+          role: 'user',
+          emailVerified: true,
+          isActive: true,
+        })
+        .returning()
+
+      console.log('✅ E2E test user created successfully!')
+      console.log('📧 Email: e2e-test@example.com')
+      console.log('🔑 Password: password123')
+      console.log('👤 User ID:', e2eUser.id)
+    } else {
+      console.log('✅ E2E test user already exists')
+    }
   } catch (error: unknown) {
     const err = error as { code?: string; message?: string }
     if (err.code === 'ECONNREFUSED') {

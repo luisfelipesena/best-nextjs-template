@@ -229,14 +229,35 @@ npm run test:ci            # CI pipeline completa
 ./scripts/setup-dev.sh       # Setup completo do ambiente
 ```
 
-### 👤 Usuário de Teste Padrão
+### 🧪 Executando Testes E2E
 
-Credenciais para desenvolvimento e testes E2E:
+```bash
+# 1. Configure o banco e crie usuários de teste
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/test_db"
+npm run drizzle:migrate
+npm run seed:test-user
+
+# 2. Inicie a aplicação
+npm run build
+npm run start
+
+# 3. Execute os testes E2E (em outro terminal)
+npm run test:e2e
+```
+
+### 👤 Usuários de Teste
+
+**Usuário de Desenvolvimento:**
 - **Email**: `test@example.com`
 - **Senha**: `password123`
 - **Role**: `user`
 
-> Criado automaticamente com `npm run seed:test-user`
+**Usuário de Testes E2E:**
+- **Email**: `e2e-test@example.com`
+- **Senha**: `password123`
+- **Role**: `user`
+
+> Ambos criados automaticamente com `npm run seed:test-user`
 
 ## 🌟 Features Implementadas
 
@@ -391,6 +412,8 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - ✅ **AJUSTADO**: Textos esperados nos testes corrigidos
 - ✅ **RESOLVIDO**: Erro "trusted origin is invalid" no Better Auth
 - ✅ **OTIMIZADO**: Configuração robusta de variáveis de ambiente com fallbacks
+- ✅ **IMPLEMENTADO**: Usuário E2E dedicado (`e2e-test@example.com`)
+- ✅ **SIMPLIFICADO**: Testes limpos sem complexidade desnecessária
 
 ### TypeScript & Build
 - ✅ **RESOLVIDO**: Erro de build com arquivos de teste incluídos

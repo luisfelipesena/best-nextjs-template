@@ -6,23 +6,6 @@ test.describe('Template E2E Tests', () => {
     await context.clearCookies()
   })
 
-  // Add a test to verify the auth API is working
-  test('should verify auth API is working', async ({ request }) => {
-    // Test if the auth API endpoints are accessible
-    const sessionResponse = await request.get('/api/auth/session')
-    console.log('Session API status:', sessionResponse.status())
-    
-    // Try a login request directly to the API
-    const loginResponse = await request.post('/api/auth/sign-in/email', {
-      data: {
-        email: 'test@example.com',
-        password: 'password123'
-      }
-    })
-    console.log('Login API status:', loginResponse.status())
-    const loginBody = await loginResponse.text()
-    console.log('Login API response:', loginBody)
-  })
 
   test('should load homepage', async ({ page }) => {
     await page.goto('/')
@@ -68,7 +51,7 @@ test.describe('Template E2E Tests', () => {
     await expect(page).toHaveURL('/login')
 
     // 3. Fill login form with valid credentials
-    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.getByLabel(/email/i).fill('e2e-test@example.com')
     await page.getByLabel(/senha/i).fill('password123')
 
     // 4. Submit form
@@ -135,7 +118,7 @@ test.describe('Template E2E Tests', () => {
   test('should logout successfully', async ({ page }) => {
     // 1. Login first
     await page.goto('/login')
-    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.getByLabel(/email/i).fill('e2e-test@example.com')
     await page.getByLabel(/senha/i).fill('password123')
     await page.getByRole('button', { name: /entrar/i }).click()
 
