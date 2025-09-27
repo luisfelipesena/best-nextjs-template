@@ -1,8 +1,13 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
   darkMode: ['class'],
-  content: ['src/app/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/features/**/*.{ts,tsx}', 'src/hooks/**/*.{ts,tsx}'],
+  content: [
+    'src/app/**/*.{ts,tsx}',
+    'src/components/**/*.{ts,tsx}',
+    'src/features/**/*.{ts,tsx}',
+    'src/hooks/**/*.{ts,tsx}',
+  ],
   theme: {
     extend: {
       borderRadius: {
@@ -55,6 +60,6 @@ const config: Config = {
     },
   },
   plugins: [require('tailwindcss-animate')],
-};
+}
 
-export default config;
+export default config
