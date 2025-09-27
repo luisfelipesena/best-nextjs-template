@@ -27,8 +27,6 @@ export const user = pgTable('user', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-// Legacy alias for backward compatibility
-export const users = user
 
 // Sessions table (Better Auth)
 export const session = pgTable('session', {
@@ -41,8 +39,6 @@ export const session = pgTable('session', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-// Legacy alias for backward compatibility
-export const sessions = session
 
 // Accounts table (Better Auth)
 export const account = pgTable('account', {
@@ -58,8 +54,6 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-// Legacy alias for backward compatibility
-export const accounts = account
 
 // Verification tokens table (Better Auth)
 export const verification = pgTable('verification', {
@@ -70,8 +64,6 @@ export const verification = pgTable('verification', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-// Legacy alias for backward compatibility
-export const verificationTokens = verification
 
 // Activity logs table
 export const activityLogs = pgTable('activity_logs', {
@@ -125,8 +117,6 @@ export const userRelations = relations(user, ({ many, one }) => ({
   orders: many(orders),
 }))
 
-// Legacy alias
-export const usersRelations = userRelations
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
@@ -135,8 +125,6 @@ export const sessionRelations = relations(session, ({ one }) => ({
   }),
 }))
 
-// Legacy alias
-export const sessionsRelations = sessionRelations
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
@@ -145,8 +133,6 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }))
 
-// Legacy alias
-export const accountsRelations = accountRelations
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   user: one(user, {

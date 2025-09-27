@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server'
 import { eq, count, and } from 'drizzle-orm'
 import { hash, verify } from '@node-rs/argon2'
 import type { Context } from '@/server/trpc/context'
-import { users, activityLogs } from '@/server/db/schema'
+import { user, activityLogs } from '@/server/db/schema'
 import type { UpdateProfileDto, ChangePasswordDto } from './auth.dto'
 
 interface UserProfile {
@@ -38,8 +38,8 @@ export class AuthService {
   }
 
   async getProfile(): Promise<UserProfile> {
-    const user = this.ctx.auth?.user
-    if (!user) {
+    const currentUser = this.ctx.auth?.user
+    if (!currentUser) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para acessar seu perfil',
@@ -47,8 +47,8 @@ export class AuthService {
     }
 
     // Get user data from database
-    const dbUser = await this.ctx.db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, user.id),
+    const dbUser = await this.ctx.db.query.user.findFirst({
+      where: (userTable, { eq }) => eq(userTable.id, currentUser.id),
       columns: {
         id: true,
         name: true,
@@ -69,8 +69,8 @@ export class AuthService {
   }
 
   async updateProfile(input: UpdateProfileDto): Promise<UpdateProfileResponse> {
-    const user = this.ctx.auth?.user
-    if (!user) {
+    const currentUser = this.ctx.auth?.user
+    if (!currentUser) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para atualizar seu perfil',
@@ -80,15 +80,15 @@ export class AuthService {
     try {
       // Update user in database using Drizzle
       const [updatedUser] = await this.ctx.db
-        .update(users)
+        .update(user)
         .set({
           name: input.name,
           updatedAt: new Date(),
         })
-        .where(eq(users.id, user.id))
+        .where(eq(user.id, currentUser.id))
         .returning({
-          id: users.id,
-          name: users.name,
+          id: user.id,
+          name: user.name,
         })
 
       if (!updatedUser) {
@@ -115,8 +115,8 @@ export class AuthService {
   }
 
   async changePassword(input: ChangePasswordDto): Promise<ChangePasswordResponse> {
-    const user = this.ctx.auth?.user
-    if (!user) {
+    const currentUser = this.ctx.auth?.user
+    if (!currentUser) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para alterar sua senha',
@@ -125,8 +125,8 @@ export class AuthService {
 
     try {
       // Get current user with password hash
-      const dbUser = await this.ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.id, user.id),
+      const dbUser = await this.ctx.db.query.user.findFirst({
+        where: (userTable, { eq }) => eq(userTable.id, currentUser.id),
         columns: {
           id: true,
           passwordHash: true,
@@ -156,12 +156,12 @@ export class AuthService {
 
       // Update password in database
       await this.ctx.db
-        .update(users)
+        .update(user)
         .set({
           passwordHash: newPasswordHash,
           updatedAt: new Date(),
         })
-        .where(eq(users.id, user.id))
+        .where(eq(user.id, currentUser.id))
 
       return { success: true, message: 'Senha alterada com sucesso' }
     } catch (error) {
@@ -177,8 +177,8 @@ export class AuthService {
   }
 
   async getUserStats(): Promise<UserStats> {
-    const user = this.ctx.auth?.user
-    if (!user) {
+    const currentUser = this.ctx.auth?.user
+    if (!currentUser) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Você precisa estar logado para ver estatísticas',
@@ -187,8 +187,8 @@ export class AuthService {
 
     try {
       // Get user data
-      const dbUser = await this.ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.id, user.id),
+      const dbUser = await this.ctx.db.query.user.findFirst({
+        where: (userTable, { eq }) => eq(userTable.id, currentUser.id),
         columns: {
           createdAt: true,
           lastLoginAt: true,
@@ -209,7 +209,7 @@ export class AuthService {
       const loginCount = await this.ctx.db
         .select({ count: count() })
         .from(activityLogs)
-        .where(and(eq(activityLogs.userId, user.id), eq(activityLogs.type, 'user_login')))
+        .where(and(eq(activityLogs.userId, currentUser.id), eq(activityLogs.type, 'user_login')))
 
       // Calculate profile completeness
       let completeness = 0

@@ -37,6 +37,8 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "vitest.config.ts",
+    "playwright.config.ts"
   ]
 }

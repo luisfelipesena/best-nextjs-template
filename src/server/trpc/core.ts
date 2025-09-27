@@ -45,8 +45,8 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
 
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   // Check if user has admin role from database
-  const user = await ctx.db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.id, ctx.user.id),
+  const user = await ctx.db.query.user.findFirst({
+    where: (userTable, { eq }) => eq(userTable.id, ctx.user.id),
     columns: { role: true },
   })
 
