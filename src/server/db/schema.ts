@@ -14,7 +14,7 @@ export const activityTypeEnum = pgEnum('activity_type', [
 
 // Users table (Better Auth compatible)
 export const user = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
   name: text('name'),
   passwordHash: text('password_hash'),
@@ -31,10 +31,13 @@ export const user = pgTable('user', {
 // Sessions table (Better Auth)
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
+  token: text('token'),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
@@ -43,13 +46,18 @@ export const session = pgTable('session', {
 // Accounts table (Better Auth)
 export const account = pgTable('account', {
   id: text('id').primaryKey(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   providerId: text('provider_id').notNull(),
   accountId: text('account_id').notNull(),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
+  scope: text('scope'),
+  idToken: text('id_token'),
+  password: text('password'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
@@ -68,7 +76,7 @@ export const verification = pgTable('verification', {
 // Activity logs table
 export const activityLogs = pgTable('activity_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   type: activityTypeEnum('type').notNull(),
@@ -82,7 +90,7 @@ export const activityLogs = pgTable('activity_logs', {
 // User preferences table
 export const userPreferences = pgTable('user_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' })
     .unique(),
@@ -97,7 +105,7 @@ export const userPreferences = pgTable('user_preferences', {
 // Example business table - Orders
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   orderNumber: text('order_number').notNull().unique(),
