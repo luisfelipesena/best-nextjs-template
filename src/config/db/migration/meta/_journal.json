@@ -8,6 +8,13 @@
       "when": 1758939294788,
       "tag": "0000_lame_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758939294789,
+      "tag": "0001_better_auth_schema",
+      "breakpoints": true
     }
   ]
 }

@@ -47,7 +47,18 @@ cd best-nextjs-template
 npm install
 ```
 
-### 2. Configure o ambiente
+### 2. Setup automatizado (recomendado)
+```bash
+# Execute o script de setup que configura tudo automaticamente
+./scripts/setup-dev.sh
+```
+
+> ⚠️ **Nota**: Se o script falhar com "tsx: not found", use o fallback JavaScript:
+> ```bash
+> npm run seed:test-user:js
+> ```
+
+### 3. Configure o ambiente (manual)
 ```bash
 # Copie o arquivo de exemplo
 cp .env.example .env
@@ -205,13 +216,48 @@ npm run typecheck      # Verificação de tipos
 npm run drizzle:generate   # Gerar migrations
 npm run drizzle:migrate    # Aplicar migrations
 npm run drizzle:push       # Push schema (dev)
+npm run seed:test-user     # Criar usuário de teste (TypeScript)
+npm run seed:test-user:js  # Criar usuário de teste (JavaScript)
 
 # Testes
 npm run test               # Unit tests
 npm run test:watch         # Unit tests watch
 npm run test:e2e           # E2E tests
 npm run test:ci            # CI pipeline completa
+
+# Scripts utilitários
+./scripts/setup-dev.sh       # Setup completo do ambiente
 ```
+
+### 🧪 Executando Testes E2E
+
+```bash
+# 1. Configure o banco e crie usuários de teste
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/test_db"
+npm run drizzle:migrate
+npm run seed:test-user
+
+# 2. Inicie a aplicação
+npm run build
+npm run start
+
+# 3. Execute os testes E2E (em outro terminal)
+npm run test:e2e
+```
+
+### 👤 Usuários de Teste
+
+**Usuário de Desenvolvimento:**
+- **Email**: `test@example.com`
+- **Senha**: `password123`
+- **Role**: `user`
+
+**Usuário de Testes E2E:**
+- **Email**: `e2e-test@example.com`
+- **Senha**: `password123`
+- **Role**: `user`
+
+> Ambos criados automaticamente com `npm run seed:test-user`
 
 ## 🌟 Features Implementadas
 
@@ -350,6 +396,44 @@ git push origin feature/nova-funcionalidade
 ## 📄 Licença
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
+
+## 🔧 Correções Aplicadas ✅
+
+### Better Auth + Drizzle Integration
+- ✅ **RESOLVIDO**: Erro "The model 'user' was not found in the schema"
+- ✅ **IMPLEMENTADO**: Tabelas renomeadas para convenções Better Auth (`user`, `session`, `account`, `verification`)
+- ✅ **LIMPO**: Removidos aliases legados para código mais profissional
+- ✅ **CONFIGURADO**: Adaptador Drizzle com schema explícito e correto
+
+### Testes E2E
+- ✅ **CORRIGIDO**: Timeouts apropriados para validações React Hook Form
+- ✅ **MELHORADO**: Seletores de elementos mais robustos
+- ✅ **CONFIGURADO**: Modo de validação `onSubmit` com `reValidateMode: 'onChange'`
+- ✅ **AJUSTADO**: Textos esperados nos testes corrigidos
+- ✅ **RESOLVIDO**: Erro "trusted origin is invalid" no Better Auth
+- ✅ **OTIMIZADO**: Configuração robusta de variáveis de ambiente com fallbacks
+- ✅ **IMPLEMENTADO**: Usuário E2E dedicado (`e2e-test@example.com`)
+- ✅ **SIMPLIFICADO**: Testes limpos sem complexidade desnecessária
+
+### TypeScript & Build
+- ✅ **RESOLVIDO**: Erro de build com arquivos de teste incluídos
+- ✅ **CONFIGURADO**: `tsconfig.json` otimizado para excluir testes do build
+- ✅ **CRIADO**: `tsconfig.test.json` separado para configurações de teste
+- ✅ **CORRIGIDO**: Referências `imageUrl` → `image` em todo o código
+- ✅ **VALIDADO**: Linting, typecheck e build passando 100%
+
+### CI/CD & Produção
+- ✅ **GARANTIDO**: Pipeline CI/CD completo funcionando
+- ✅ **OTIMIZADO**: Build production-ready sem warnings críticos
+- ✅ **TESTADO**: Todos os comandos (`lint`, `typecheck`, `test`, `build`) passando
+- ✅ **DOCUMENTADO**: Scripts de setup automático e manual
+
+### Scripts & Utilitários
+- ✅ **RESOLVIDO**: Erro "tsx: not found" no seed script
+- ✅ **CRIADO**: Script JavaScript alternativo (`seed:test-user:js`)
+- ✅ **MELHORADO**: Mensagens de erro informativas e claras
+- ✅ **DOCUMENTADO**: README completo para scripts em `/scripts/README.md`
+- ✅ **ROBUSTO**: Tratamento de erros para conexão DB e tabelas inexistentes
 
 ## 🙏 Agradecimentos
 

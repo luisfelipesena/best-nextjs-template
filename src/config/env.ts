@@ -24,6 +24,6 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
-  skipValidation: nodeEnv === 'production',
+  skipValidation: nodeEnv === 'production' || nodeEnv === 'test',
   emptyStringAsUndefined: true,
 })

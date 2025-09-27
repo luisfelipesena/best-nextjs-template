@@ -12,13 +12,13 @@ export const activityTypeEnum = pgEnum('activity_type', [
   'payment_received',
 ])
 
-// Users table
-export const users = pgTable('users', {
+// Users table (Better Auth compatible)
+export const user = pgTable('user', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
   name: text('name'),
   passwordHash: text('password_hash'),
-  imageUrl: text('image_url'),
+  image: text('image'),
   role: userRoleEnum('role').default('user').notNull(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
@@ -27,23 +27,25 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+
 // Sessions table (Better Auth)
-export const sessions = pgTable('sessions', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const session = pgTable('session', {
+  id: text('id').primaryKey(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+
 // Accounts table (Better Auth)
-export const accounts = pgTable('accounts', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const account = pgTable('account', {
+  id: text('id').primaryKey(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
   providerId: text('provider_id').notNull(),
   accountId: text('account_id').notNull(),
   accessToken: text('access_token'),
@@ -52,21 +54,23 @@ export const accounts = pgTable('accounts', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+
 // Verification tokens table (Better Auth)
-export const verificationTokens = pgTable('verification_tokens', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const verification = pgTable('verification', {
+  id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+
 // Activity logs table
 export const activityLogs = pgTable('activity_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
   type: activityTypeEnum('type').notNull(),
   description: text('description').notNull(),
   metadata: text('metadata'), // JSON string for additional data
@@ -80,7 +84,7 @@ export const userPreferences = pgTable('user_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' })
+    .references(() => user.id, { onDelete: 'cascade' })
     .unique(),
   theme: text('theme').default('system'),
   language: text('language').default('pt-BR'),
@@ -95,7 +99,7 @@ export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => user.id, { onDelete: 'cascade' }),
   orderNumber: text('order_number').notNull().unique(),
   status: text('status').default('pending').notNull(),
   totalAmount: decimal('total_amount', { precision: 10, scale: 2 }).notNull(),
@@ -105,56 +109,59 @@ export const orders = pgTable('orders', {
 })
 
 // Relations
-export const usersRelations = relations(users, ({ many, one }) => ({
-  sessions: many(sessions),
-  accounts: many(accounts),
+export const userRelations = relations(user, ({ many, one }) => ({
+  sessions: many(session),
+  accounts: many(account),
   activityLogs: many(activityLogs),
   preferences: one(userPreferences),
   orders: many(orders),
 }))
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
   }),
 }))
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
   }),
 }))
+
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [activityLogs.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }))
 
 export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [userPreferences.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }))
 
 export const ordersRelations = relations(orders, ({ one }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [orders.userId],
-    references: [users.id],
+    references: [user.id],
   }),
 }))
 
 // Export types
-export type User = typeof users.$inferSelect
-export type NewUser = typeof users.$inferInsert
-export type Session = typeof sessions.$inferSelect
-export type NewSession = typeof sessions.$inferInsert
-export type Account = typeof accounts.$inferSelect
-export type NewAccount = typeof accounts.$inferInsert
+export type User = typeof user.$inferSelect
+export type NewUser = typeof user.$inferInsert
+export type Session = typeof session.$inferSelect
+export type NewSession = typeof session.$inferInsert
+export type Account = typeof account.$inferSelect
+export type NewAccount = typeof account.$inferInsert
 export type ActivityLog = typeof activityLogs.$inferSelect
 export type NewActivityLog = typeof activityLogs.$inferInsert
 export type UserPreferences = typeof userPreferences.$inferSelect

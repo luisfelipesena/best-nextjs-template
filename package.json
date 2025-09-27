@@ -20,7 +20,8 @@
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:push": "drizzle-kit push",
-    "seed:test-user": "tsx scripts/seed-test-user.ts"
+    "seed:test-user": "npx tsx scripts/seed-test-user.ts",
+    "seed:test-user:js": "node scripts/seed-test-user.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

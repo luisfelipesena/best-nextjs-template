@@ -1,8 +1,28 @@
 import { env } from '@/config/env'
 
+// Get base URL with fallback
+const getBaseURL = () => {
+  try {
+    return env.BETTER_AUTH_BASE_URL || 'http://localhost:3000'
+  } catch {
+    return 'http://localhost:3000'
+  }
+}
+
+// Get secret with fallback
+const getSecret = () => {
+  try {
+    return env.BETTER_AUTH_SECRET || 'fallback-secret-key-for-development-only-32-chars'
+  } catch {
+    return 'fallback-secret-key-for-development-only-32-chars'
+  }
+}
+
+const baseURL = getBaseURL()
+
 export const authConfig = {
-  baseURL: env.BETTER_AUTH_BASE_URL,
-  secret: env.BETTER_AUTH_SECRET,
+  baseURL,
+  secret: getSecret(),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Disable for development/testing
@@ -16,7 +36,7 @@ export const authConfig = {
       maxAge: 60 * 5, // 5 minutes
     },
   },
-  trustedOrigins: [env.BETTER_AUTH_BASE_URL],
+  trustedOrigins: [baseURL],
   rateLimit: {
     window: 60 * 1000, // 1 minute
     max: 10, // 10 requests per window

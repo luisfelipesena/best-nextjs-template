@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Grep(**)",
+      "Shell(npm run lint)",
+      "Shell(npm run typecheck)",
+      "Shell(find)",
+      "Shell(grep)",
+      "Shell(wc)",
+      "Shell(echo)",
+      "Shell(gh pr comment)"
+    ],
+    "deny": [
+      "Shell(git push)",
+      "Shell(gh pr create)",
+      "Write(**)",
+      "Edit(**)",
+      "Shell(rm)",
+      "Shell(mv)",
+      "Shell(cp)"
+    ]
+  }
+}
