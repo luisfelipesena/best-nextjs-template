@@ -1,8 +1,23 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Pool } from 'pg'
-import { hash } from '@node-rs/argon2'
-import { user } from '@/server/db/schema'
-import { eq } from 'drizzle-orm'
+const { drizzle } = require('drizzle-orm/node-postgres')
+const { Pool } = require('pg')
+const { hash } = require('@node-rs/argon2')
+const { eq } = require('drizzle-orm')
+
+// Import the user table schema
+const { pgTable, text, uuid, boolean, timestamp } = require('drizzle-orm/pg-core')
+
+// Define the user table schema (simplified for seeding)
+const user = pgTable('user', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull().unique(),
+  name: text('name'),
+  passwordHash: text('password_hash'),
+  role: text('role').default('user').notNull(),
+  emailVerified: boolean('email_verified').default(false).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
 
 async function createTestUser() {
   if (!process.env.DATABASE_URL) {
@@ -59,13 +74,13 @@ async function createTestUser() {
     console.log('📧 Email: test@example.com')
     console.log('🔑 Password: password123')
     console.log('👤 User ID:', testUser.id)
-  } catch (error: any) {
+  } catch (error) {
     if (error.code === 'ECONNREFUSED') {
       console.error('❌ Cannot connect to database. Make sure PostgreSQL is running and DATABASE_URL is correct.')
-    } else if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+    } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
       console.error('❌ Database table "user" does not exist. Run migrations first: npm run drizzle:migrate')
     } else {
-      console.error('❌ Error creating test user:', error.message || error)
+      console.error('❌ Error creating test user:', error.message)
     }
     throw error
   } finally {
@@ -76,9 +91,9 @@ async function createTestUser() {
 // Run if called directly
 if (require.main === module) {
   createTestUser().catch((error) => {
-    console.error('Failed to create test user:', error)
+    console.error('❌ Failed to create test user:', error.message)
     process.exit(1)
   })
 }
 
-export { createTestUser }
+module.exports = { createTestUser }

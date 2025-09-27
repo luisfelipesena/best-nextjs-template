@@ -53,7 +53,12 @@ npm install
 ./scripts/setup-dev.sh
 ```
 
-### 2. Configure o ambiente (manual)
+> ⚠️ **Nota**: Se o script falhar com "tsx: not found", use o fallback JavaScript:
+> ```bash
+> npm run seed:test-user:js
+> ```
+
+### 3. Configure o ambiente (manual)
 ```bash
 # Copie o arquivo de exemplo
 cp .env.example .env
@@ -211,13 +216,27 @@ npm run typecheck      # Verificação de tipos
 npm run drizzle:generate   # Gerar migrations
 npm run drizzle:migrate    # Aplicar migrations
 npm run drizzle:push       # Push schema (dev)
+npm run seed:test-user     # Criar usuário de teste (TypeScript)
+npm run seed:test-user:js  # Criar usuário de teste (JavaScript)
 
 # Testes
 npm run test               # Unit tests
 npm run test:watch         # Unit tests watch
 npm run test:e2e           # E2E tests
 npm run test:ci            # CI pipeline completa
+
+# Scripts utilitários
+./scripts/setup-dev.sh       # Setup completo do ambiente
 ```
+
+### 👤 Usuário de Teste Padrão
+
+Credenciais para desenvolvimento e testes E2E:
+- **Email**: `test@example.com`
+- **Senha**: `password123`
+- **Role**: `user`
+
+> Criado automaticamente com `npm run seed:test-user`
 
 ## 🌟 Features Implementadas
 
@@ -383,6 +402,13 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 - ✅ **OTIMIZADO**: Build production-ready sem warnings críticos
 - ✅ **TESTADO**: Todos os comandos (`lint`, `typecheck`, `test`, `build`) passando
 - ✅ **DOCUMENTADO**: Scripts de setup automático e manual
+
+### Scripts & Utilitários
+- ✅ **RESOLVIDO**: Erro "tsx: not found" no seed script
+- ✅ **CRIADO**: Script JavaScript alternativo (`seed:test-user:js`)
+- ✅ **MELHORADO**: Mensagens de erro informativas e claras
+- ✅ **DOCUMENTADO**: README completo para scripts em `/scripts/README.md`
+- ✅ **ROBUSTO**: Tratamento de erros para conexão DB e tabelas inexistentes
 
 ## 🙏 Agradecimentos
 

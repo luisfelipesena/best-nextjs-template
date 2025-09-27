@@ -28,7 +28,7 @@ npm run drizzle:migrate
 
 # Seed test user
 echo "👤 Creating test user..."
-npm run seed:test-user
+npm run seed:test-user || npm run seed:test-user:js
 
 # Run type check
 echo "🔍 Running type check..."
