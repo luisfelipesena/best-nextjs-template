@@ -24,7 +24,7 @@ test.describe('Basic E2E Tests', () => {
     await page.context().clearCookies()
 
     // Navigate to dashboard route (should redirect to login)
-    const response = await page.goto('/dashboard')
+    const _response = await page.goto('/dashboard')
 
     // Wait a bit for any client-side redirects
     await page.waitForTimeout(2000)
