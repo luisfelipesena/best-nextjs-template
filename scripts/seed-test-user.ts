@@ -24,11 +24,7 @@ async function createTestUser() {
 
     // Check if test user already exists
     console.log('🔍 Checking if test user exists...')
-    const existingUser = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, 'test@example.com'))
-      .limit(1)
+    const existingUser = await db.select().from(user).where(eq(user.email, 'test@example.com')).limit(1)
 
     if (existingUser.length > 0) {
       console.log('✅ Test user already exists')
@@ -46,6 +42,7 @@ async function createTestUser() {
     const [testUser] = await db
       .insert(user)
       .values({
+        id: 'test-user-seed-1234567890',
         email: 'test@example.com',
         name: 'Test User',
         passwordHash,
@@ -61,16 +58,13 @@ async function createTestUser() {
     console.log('👤 User ID:', testUser.id)
 
     // Also create E2E test user
-    const existingE2EUser = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, 'e2e-test@example.com'))
-      .limit(1)
+    const existingE2EUser = await db.select().from(user).where(eq(user.email, 'e2e-test@example.com')).limit(1)
 
     if (existingE2EUser.length === 0) {
       const [e2eUser] = await db
         .insert(user)
         .values({
+          id: 'e2e-test-user-1234567890',
           email: 'e2e-test@example.com',
           name: 'E2E Test User',
           passwordHash,

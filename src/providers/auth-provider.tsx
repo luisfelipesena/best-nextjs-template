@@ -2,9 +2,12 @@
 
 import { ReactNode, createContext, useContext, useState, useEffect } from 'react'
 import { createAuthClient } from 'better-auth/react'
+import { useRouter } from 'next/navigation'
 
 const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
+  baseURL:
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
 })
 
 interface User {
@@ -39,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<AuthSession | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   const fetchSession = async () => {
     try {
@@ -146,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authClient.signOut()
       setUser(null)
       setSession(null)
+      router.push('/')
     } catch (err) {
       console.error('Error signing out:', err)
     }

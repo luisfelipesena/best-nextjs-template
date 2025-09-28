@@ -27,7 +27,6 @@ export const user = pgTable('user', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-
 // Sessions table (Better Auth)
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -41,7 +40,6 @@ export const session = pgTable('session', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
-
 
 // Accounts table (Better Auth)
 export const account = pgTable('account', {
@@ -62,7 +60,6 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
-
 // Verification tokens table (Better Auth)
 export const verification = pgTable('verification', {
   id: text('id').primaryKey(),
@@ -71,7 +68,6 @@ export const verification = pgTable('verification', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
-
 
 // Activity logs table
 export const activityLogs = pgTable('activity_logs', {
@@ -125,7 +121,6 @@ export const userRelations = relations(user, ({ many, one }) => ({
   orders: many(orders),
 }))
 
-
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
@@ -133,14 +128,12 @@ export const sessionRelations = relations(session, ({ one }) => ({
   }),
 }))
 
-
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
     references: [user.id],
   }),
 }))
-
 
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   user: one(user, {
